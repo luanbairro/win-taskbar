@@ -15,31 +15,31 @@
         <ResourceDictionary Source="/Styles/FluentTheme.xaml" />
     </Window.Resources>
 
-    <!-- Liquid Glass Dock Container with Specular Reflection -->
+    <!-- Liquid Glass Dock Container with Crystal Transparency -->
     <Grid VerticalAlignment="Bottom" Height="56" Margin="6,0,6,6">
-        <!-- Main Liquid Glass Pill Border -->
+        <!-- Main Transparent Liquid Glass Pill Border -->
         <Border CornerRadius="28"
                 BorderThickness="1"
                 Padding="6,4">
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#8AFFFFFF" Offset="0.0" />
-                    <GradientStop Color="#2EFFFFFF" Offset="0.35" />
-                    <GradientStop Color="#14FFFFFF" Offset="0.75" />
-                    <GradientStop Color="#3DFFFFFF" Offset="1.0" />
+                    <GradientStop Color="#90FFFFFF" Offset="0.0" />
+                    <GradientStop Color="#33FFFFFF" Offset="0.3" />
+                    <GradientStop Color="#0AFFFFFF" Offset="0.75" />
+                    <GradientStop Color="#38FFFFFF" Offset="1.0" />
                 </LinearGradientBrush>
             </Border.BorderBrush>
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#5218283E" Offset="0.0" />
-                    <GradientStop Color="#330E1826" Offset="0.5" />
-                    <GradientStop Color="#45122033" Offset="1.0" />
+                    <GradientStop Color="#3622354A" Offset="0.0" />
+                    <GradientStop Color="#18131E2A" Offset="0.5" />
+                    <GradientStop Color="#24182536" Offset="1.0" />
                 </LinearGradientBrush>
             </Border.Background>
 
             <!-- Top Specular Rim Reflection -->
             <Grid>
-                <Border Height="1" VerticalAlignment="Top" Margin="26,1,26,0" Background="#4AFFFFFF" IsHitTestVisible="False" />
+                <Border Height="1" VerticalAlignment="Top" Margin="26,1,26,0" Background="#50FFFFFF" IsHitTestVisible="False" />
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
@@ -48,8 +48,8 @@
                         <!-- Start Button (Windows / Luma style) -->
                         <Button x:Name="BtnStartMenu"
                                 ToolTip="Menu Iniciar"
-                                Background="#2AFFFFFF"
-                                BorderBrush="#40FFFFFF"
+                                Background="#1CFFFFFF"
+                                BorderBrush="#38FFFFFF"
                                 BorderThickness="1"
                                 Cursor="Hand"
                                 Width="38" Height="38"
@@ -77,8 +77,8 @@
                         <!-- Search Pill -->
                         <Button x:Name="BtnSearchLauncher"
                                 ToolTip="Pesquisa Rápida (Alt+Espaço)"
-                                Background="#1AFFFFFF"
-                                BorderBrush="#2EFFFFFF"
+                                Background="#14FFFFFF"
+                                BorderBrush="#26FFFFFF"
                                 BorderThickness="1"
                                 Cursor="Hand"
                                 Height="34" Width="88"
@@ -90,323 +90,323 @@
                                             BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}"
                                             CornerRadius="17">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="b" Property="Background" Value="#33FFFFFF" />
-                                            <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource AccentCyanBrush}" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="🔍" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
-                                <TextBlock Text="Buscar" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#33FFFFFF" />
+                                    <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource AccentCyanBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="🔍" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Buscar" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
+                </Button>
+            </StackPanel>
 
-                    <!-- Subtle Vertical Glass Divider -->
-                    <Rectangle Width="1" Fill="#26FFFFFF" Margin="8,8" Height="22" />
+            <!-- Subtle Vertical Glass Divider -->
+            <Rectangle Width="1" Fill="#20FFFFFF" Margin="8,8" Height="22" />
 
-                    <!-- SECTION 2: APPS DOCK (PINNED & RUNNING APPS WITH MAC MAGNIFICATION WAVE) -->
-                    <ItemsControl x:Name="ItemsDockApps"
-                                  VerticalAlignment="Center"
-                                  MouseMove="ItemsDockApps_MouseMove"
-                                  MouseLeave="ItemsDockApps_MouseLeave">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <!-- macOS Pinned vs Running Divider -->
-                                    <Rectangle Width="1" Fill="#33FFFFFF" Margin="3,8,3,8" Height="20">
-                                        <Rectangle.Style>
-                                            <Style TargetType="Rectangle">
+            <!-- SECTION 2: APPS DOCK (PINNED & RUNNING APPS WITH MAC MAGNIFICATION WAVE) -->
+            <ItemsControl x:Name="ItemsDockApps"
+                          VerticalAlignment="Center"
+                          MouseMove="ItemsDockApps_MouseMove"
+                          MouseLeave="ItemsDockApps_MouseLeave">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- macOS Pinned vs Running Divider -->
+                            <Rectangle Width="1" Fill="#2EFFFFFF" Margin="3,8,3,8" Height="20">
+                                <Rectangle.Style>
+                                    <Style TargetType="Rectangle">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ShowSeparatorBefore}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+
+                            <!-- Dock Icon Button with macOS Magnification Wave -->
+                            <Button ToolTip="{Binding Name}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Width="42" Height="44"
+                                    Margin="1,0"
+                                    Click="BtnDockApp_Click"
+                                    MouseRightButtonUp="BtnDockApp_RightClick"
+                                    RenderTransformOrigin="0.5, 0.95">
+                                <Button.RenderTransform>
+                                    <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
+                                </Button.RenderTransform>
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="12">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="36" Height="38">
+                                    <!-- App Icon -->
+                                    <Image Source="{Binding Icon}" Width="30" Height="30" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0">
+                                        <Image.Effect>
+                                            <DropShadowEffect BlurRadius="4" ShadowDepth="2" Opacity="0.3" Color="Black" />
+                                        </Image.Effect>
+                                    </Image>
+
+                                    <!-- Notification Badge (Red Pill) -->
+                                    <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                            Background="#FF3B30"
+                                            CornerRadius="7"
+                                            Height="14" MinWidth="14"
+                                            Padding="3,0"
+                                            Margin="0,0,-4,0">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ShowSeparatorBefore}" Value="True">
+                                                    <DataTrigger Binding="{Binding HasBadge}" Value="True">
                                                         <Setter Property="Visibility" Value="Visible" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
-                                        </Rectangle.Style>
-                                    </Rectangle>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding BadgeText}"
+                                                   Foreground="White"
+                                                   FontSize="9"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
 
-                                    <!-- Dock Icon Button with macOS Magnification Wave -->
-                                    <Button ToolTip="{Binding Name}"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Cursor="Hand"
-                                            Width="42" Height="44"
-                                            Margin="1,0"
-                                            Click="BtnDockApp_Click"
-                                            MouseRightButtonUp="BtnDockApp_RightClick"
-                                            RenderTransformOrigin="0.5, 0.95">
-                                        <Button.RenderTransform>
-                                            <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
-                                        </Button.RenderTransform>
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="12">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="36" Height="38">
-                                            <!-- App Icon -->
-                                            <Image Source="{Binding Icon}" Width="30" Height="30" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0">
-                                                <Image.Effect>
-                                                    <DropShadowEffect BlurRadius="4" ShadowDepth="2" Opacity="0.3" Color="Black" />
-                                                </Image.Effect>
-                                            </Image>
+                                    <!-- Running / Active Indicator Dot (Bottom) -->
+                                    <Border Width="4" Height="4"
+                                            CornerRadius="2"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Bottom"
+                                            Margin="0,0,0,1">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource AccentCyanBrush}" />
+                                                        <Setter Property="Width" Value="10" />
+                                                        <Setter Property="Height" Value="3" />
+                                                        <Setter Property="CornerRadius" Value="1.5" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                        <Setter Property="Background" Value="#AAFFFFFF" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-                                            <!-- Notification Badge (Red Pill) -->
-                                            <Border HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                    Background="#FF3B30"
-                                                    CornerRadius="7"
-                                                    Height="14" MinWidth="14"
-                                                    Padding="3,0"
-                                                    Margin="0,0,-4,0">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasBadge}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <TextBlock Text="{Binding BadgeText}"
-                                                           Foreground="White"
-                                                           FontSize="9"
-                                                           FontWeight="Bold"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center" />
-                                            </Border>
+            <!-- Subtle Vertical Glass Divider -->
+            <Rectangle Width="1" Fill="#20FFFFFF" Margin="8,8" Height="22" />
 
-                                            <!-- Running / Active Indicator Dot (Bottom) -->
-                                            <Border Width="4" Height="4"
-                                                    CornerRadius="2"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Bottom"
-                                                    Margin="0,0,0,1">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="Transparent" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                                <Setter Property="Background" Value="{StaticResource AccentCyanBrush}" />
-                                                                <Setter Property="Width" Value="10" />
-                                                                <Setter Property="Height" Value="3" />
-                                                                <Setter Property="CornerRadius" Value="1.5" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                                                <Setter Property="Background" Value="#AAFFFFFF" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                            </Border>
-                                        </Grid>
-                                    </Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+            <!-- SECTION 3: SPOTIFY / MEDIA LIQUID GLASS CARD (Fixed Width: 185px) -->
+            <Border Background="#14FFFFFF"
+                    BorderBrush="#28FFFFFF"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Height="38" Width="185"
+                    Margin="2,0"
+                    VerticalAlignment="Center">
+                <Button x:Name="BtnMedia" Click="BtnMedia_Click"
+                        ToolTip="Spotify / Reprodutor de Mídia"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand"
+                        Padding="4,0" Height="36">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="175">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26" />
+                            <ColumnDefinition Width="118" />
+                            <ColumnDefinition Width="30" />
+                        </Grid.ColumnDefinitions>
 
-                    <!-- Subtle Vertical Glass Divider -->
-                    <Rectangle Width="1" Fill="#26FFFFFF" Margin="8,8" Height="22" />
+                        <!-- Media Icon / Green Orb -->
+                        <Border Grid.Column="0" Width="22" Height="22" CornerRadius="11" Background="#1DB954" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <TextBlock Text="♫" FontSize="11" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
 
-                    <!-- SECTION 3: SPOTIFY / MEDIA LIQUID GLASS CARD (Fixed Width: 185px) -->
-                    <Border Background="#1CFFFFFF"
-                            BorderBrush="#33FFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="18"
-                            Height="38" Width="185"
-                            Margin="2,0"
-                            VerticalAlignment="Center">
-                        <Button x:Name="BtnMedia" Click="BtnMedia_Click"
-                                ToolTip="Spotify / Reprodutor de Mídia"
-                                Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                Padding="4,0" Height="36">
+                        <!-- Track Title & Artist (Fixed Width: 114px) -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0,0,0" Width="114">
+                            <TextBlock x:Name="TxtMediaStatus" Text="Spotify"
+                                       FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="Mídia" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+
+                        <!-- Mini Play/Pause Quick Button -->
+                        <Button Grid.Column="2" x:Name="BtnQuickPlayPause" Click="BtnQuickPlayPause_Click"
+                                ToolTip="Play / Pause" Width="24" Height="24"
+                                Background="#26FFFFFF" BorderBrush="#33FFFFFF" BorderThickness="1" Cursor="Hand" HorizontalAlignment="Right">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="Transparent">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
-                            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="175">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="26" />
-                                    <ColumnDefinition Width="118" />
-                                    <ColumnDefinition Width="30" />
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Media Icon / Green Orb -->
-                                <Border Grid.Column="0" Width="22" Height="22" CornerRadius="11" Background="#1DB954" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                    <TextBlock Text="♫" FontSize="11" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-
-                                <!-- Track Title & Artist (Fixed Width: 114px) -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0,0,0" Width="114">
-                                    <TextBlock x:Name="TxtMediaStatus" Text="Spotify"
-                                               FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}"
-                                               TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="Mídia" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
-                                </StackPanel>
-
-                                <!-- Mini Play/Pause Quick Button -->
-                                <Button Grid.Column="2" x:Name="BtnQuickPlayPause" Click="BtnQuickPlayPause_Click"
-                                        ToolTip="Play / Pause" Width="24" Height="24"
-                                        Background="#26FFFFFF" BorderBrush="#33FFFFFF" BorderThickness="1" Cursor="Hand" HorizontalAlignment="Right">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                    <TextBlock x:Name="TxtQuickPlayPauseIcon" Text="▶" FontSize="9" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0" />
-                                </Button>
-                            </Grid>
+                            <TextBlock x:Name="TxtQuickPlayPauseIcon" Text="▶" FontSize="9" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0" />
                         </Button>
-                    </Border>
+                    </Grid>
+                </Button>
+            </Border>
 
-                    <!-- SECTION 4: SYSTEM METRICS LIQUID GLASS CARD (Fixed Width: 290px) -->
-                    <Border Background="#1CFFFFFF"
-                            BorderBrush="#33FFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="18"
-                            Height="38" Width="290"
-                            Margin="4,0"
-                            VerticalAlignment="Center">
+            <!-- SECTION 4: SYSTEM METRICS LIQUID GLASS CARD (Fixed Width: 290px) -->
+            <Border Background="#10FFFFFF"
+                    BorderBrush="#22FFFFFF"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Height="38" Width="290"
+                    Margin="4,0"
+                    VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                    <!-- CPU Widget (Fixed Width: 56px) -->
+                    <Button x:Name="BtnCpu" Click="BtnCpu_Click"
+                            ToolTip="Monitor de CPU"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="56">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-
-                            <!-- CPU Widget (Fixed Width: 56px) -->
-                            <Button x:Name="BtnCpu" Click="BtnCpu_Click"
-                                    ToolTip="Monitor de CPU"
-                                    Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="56">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="⚙" FontFamily="Segoe UI Symbol" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
-                                    <TextBlock x:Name="TxtCpuQuick" Text="0%" Style="{StaticResource ValueTextStyle}" FontSize="11" VerticalAlignment="Center" Width="30" TextAlignment="Left" />
-                                </StackPanel>
-                            </Button>
-
-                            <!-- RAM Widget (Fixed Width: 86px) -->
-                            <Button x:Name="BtnRam" Click="BtnRam_Click"
-                                    ToolTip="Monitor de Memória RAM"
-                                    Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="86">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="▦" FontFamily="Segoe UI Symbol" FontSize="11" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
-                                    <ProgressBar x:Name="BarRamQuick" Width="26" Height="5" Maximum="100" Value="0" Style="{StaticResource FluentProgressBarStyle}" VerticalAlignment="Center" Margin="0,0,3,0" />
-                                    <TextBlock x:Name="TxtRamQuick" Text="0%" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Width="26" TextAlignment="Left" />
-                                </StackPanel>
-                            </Button>
-
-                            <!-- Disk Widget (Fixed Width: 72px) -->
-                            <Button x:Name="BtnDisk" Click="BtnDisk_Click"
-                                    ToolTip="Monitor de Disco (Leitura/Escrita)"
-                                    Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="72">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="🖴" FontFamily="Segoe UI Symbol" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
-                                    <TextBlock x:Name="TxtDiskQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" Width="46" TextAlignment="Left" />
-                                </StackPanel>
-                            </Button>
-
-                            <!-- Network Widget (Fixed Width: 72px) -->
-                            <Button x:Name="BtnNet" Click="BtnNet_Click"
-                                    ToolTip="Monitor de Rede (Download/Upload)"
-                                    Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="72">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="⇅" FontSize="11" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
-                                    <TextBlock x:Name="TxtNetQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" Width="46" TextAlignment="Left" />
-                                </StackPanel>
-                            </Button>
+                            <TextBlock Text="⚙" FontFamily="Segoe UI Symbol" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                            <TextBlock x:Name="TxtCpuQuick" Text="0%" Style="{StaticResource ValueTextStyle}" FontSize="11" VerticalAlignment="Center" Width="30" TextAlignment="Left" />
                         </StackPanel>
-                    </Border>
+                    </Button>
 
-                    <!-- SECTION 5: ACCENT TIME / CLOCK CAPSULE (Fixed Width: 52px, Sunset Accent like photo!) -->
-                    <Border Height="36" Width="52" CornerRadius="18" Margin="2,0,2,0" VerticalAlignment="Center">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#FFFF5E3A" Offset="0.0" />
-                                <GradientStop Color="#FFFF2A6D" Offset="1.0" />
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Border.BorderBrush>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#80FFFFFF" Offset="0.0" />
-                                <GradientStop Color="#20FFFFFF" Offset="1.0" />
-                            </LinearGradientBrush>
-                        </Border.BorderBrush>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock x:Name="TxtClock" Text="12:00" FontWeight="Bold" FontSize="11" Foreground="White" HorizontalAlignment="Center" />
-                            <TextBlock Text="Hoje" FontSize="8" Foreground="#E6FFFFFF" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,-1,0,0" />
+                    <!-- RAM Widget (Fixed Width: 86px) -->
+                    <Button x:Name="BtnRam" Click="BtnRam_Click"
+                            ToolTip="Monitor de Memória RAM"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="86">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="▦" FontFamily="Segoe UI Symbol" FontSize="11" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                            <ProgressBar x:Name="BarRamQuick" Width="26" Height="5" Maximum="100" Value="0" Style="{StaticResource FluentProgressBarStyle}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                            <TextBlock x:Name="TxtRamQuick" Text="0%" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Width="26" TextAlignment="Left" />
                         </StackPanel>
-                    </Border>
+                    </Button>
 
+                    <!-- Disk Widget (Fixed Width: 72px) -->
+                    <Button x:Name="BtnDisk" Click="BtnDisk_Click"
+                            ToolTip="Monitor de Disco (Leitura/Escrita)"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="72">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="🖴" FontFamily="Segoe UI Symbol" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                            <TextBlock x:Name="TxtDiskQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" Width="46" TextAlignment="Left" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Network Widget (Fixed Width: 72px) -->
+                    <Button x:Name="BtnNet" Click="BtnNet_Click"
+                            ToolTip="Monitor de Rede (Download/Upload)"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="72">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="⇅" FontSize="11" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                            <TextBlock x:Name="TxtNetQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" Width="46" TextAlignment="Left" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
-            </Grid>
-        </Border>
+            </Border>
+
+            <!-- SECTION 5: ACCENT TIME / CLOCK CAPSULE (Fixed Width: 52px, Sunset Accent like photo!) -->
+            <Border Height="36" Width="52" CornerRadius="18" Margin="2,0,2,0" VerticalAlignment="Center">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#FFFF5E3A" Offset="0.0" />
+                        <GradientStop Color="#FFFF2A6D" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border.BorderBrush>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#80FFFFFF" Offset="0.0" />
+                        <GradientStop Color="#20FFFFFF" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtClock" Text="12:00" FontWeight="Bold" FontSize="11" Foreground="White" HorizontalAlignment="Center" />
+                    <TextBlock Text="Hoje" FontSize="8" Foreground="#E6FFFFFF" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,-1,0,0" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
     </Grid>
+</Border>
+</Grid>
 </Window>
