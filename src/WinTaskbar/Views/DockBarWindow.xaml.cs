@@ -79,6 +79,9 @@ namespace WinTaskbar.Views
             int darkMode = 1;
             NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref darkMode, sizeof(int));
 
+            // Enable Real-time Windows Acrylic / Blur-behind Liquid Glass Effect
+            TaskbarHelper.EnableLiquidGlassBlur(this);
+
             TaskbarHelper.EnsureTopMost(this);
 
             RepositionOnScreen();

@@ -86,6 +86,37 @@ namespace WinTaskbar.Native
             }
         }
 
+        public static void EnableLiquidGlassBlur(Window window)
+        {
+            try
+            {
+                var helper = new WindowInteropHelper(window);
+                IntPtr hwnd = helper.EnsureHandle();
+
+                var accent = new NativeMethods.AccentPolicy
+                {
+                    AccentState = NativeMethods.AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND,
+                    AccentFlags = 2,
+                    GradientColor = unchecked((int)0x99101622) // Translucent liquid glass tint
+                };
+
+                int accentStructSize = Marshal.SizeOf(accent);
+                IntPtr accentPtr = Marshal.AllocHGlobal(accentStructSize);
+                Marshal.StructureToPtr(accent, accentPtr, false);
+
+                var data = new NativeMethods.WindowCompositionAttributeData
+                {
+                    Attribute = NativeMethods.WindowCompositionAttribute.WCA_ACCENT_POLICY,
+                    Data = accentPtr,
+                    SizeOfData = accentStructSize
+                };
+
+                NativeMethods.SetWindowCompositionAttribute(hwnd, ref data);
+                Marshal.FreeHGlobal(accentPtr);
+            }
+            catch { }
+        }
+
         public static void SetToolWindow(Window window)
         {
             var helper = new WindowInteropHelper(window);
