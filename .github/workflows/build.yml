@@ -21,10 +21,10 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore src/WinTaskbar/WinTaskbar.csproj
+      run: dotnet restore WinTaskbar.sln
 
     - name: Build Project
-      run: dotnet build src/WinTaskbar/WinTaskbar.csproj --configuration Release --no-restore
+      run: dotnet build WinTaskbar.sln --configuration Release --no-restore
 
     - name: Publish Single-File Executable
       run: |
