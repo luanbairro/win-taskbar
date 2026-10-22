@@ -40,6 +40,39 @@ namespace WinTaskbar.Native
             return null;
         }
 
+        public static ImageSource? GetIconForWindow(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero) return null;
+
+            try
+            {
+                // 1. WM_GETICON
+                IntPtr hIcon = NativeMethods.SendMessage(hWnd, NativeMethods.WM_GETICON, (IntPtr)NativeMethods.ICON_BIG, IntPtr.Zero);
+                if (hIcon == IntPtr.Zero)
+                {
+                    hIcon = NativeMethods.SendMessage(hWnd, NativeMethods.WM_GETICON, (IntPtr)NativeMethods.ICON_SMALL, IntPtr.Zero);
+                }
+
+                // 2. Class Long
+                if (hIcon == IntPtr.Zero)
+                {
+                    hIcon = NativeMethods.GetClassLongPtr(hWnd, NativeMethods.GCL_HICON);
+                }
+                if (hIcon == IntPtr.Zero)
+                {
+                    hIcon = NativeMethods.GetClassLongPtr(hWnd, NativeMethods.GCL_HICONSM);
+                }
+
+                if (hIcon != IntPtr.Zero)
+                {
+                    return CreateImageSourceFromHIcon(hIcon);
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
         public static ImageSource? CreateImageSourceFromHIcon(IntPtr hIcon)
         {
             if (hIcon == IntPtr.Zero)

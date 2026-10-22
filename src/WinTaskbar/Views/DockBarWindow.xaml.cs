@@ -88,10 +88,10 @@ namespace WinTaskbar.Views
             double screenH = SystemParameters.PrimaryScreenHeight;
 
             double dockWidth = ActualWidth > 0 ? ActualWidth : 760;
-            double dockHeight = ActualHeight > 0 ? ActualHeight : 54;
+            double dockHeight = ActualHeight > 0 ? ActualHeight : 76;
 
             Left = Math.Max(10, (screenW - dockWidth) / 2);
-            Top = screenH - dockHeight - 12;
+            Top = screenH - dockHeight - 2;
         }
 
         private void OnTimerTick(object? sender, EventArgs e)
@@ -148,51 +148,114 @@ namespace WinTaskbar.Views
             try
             {
                 var pinned = _launcherService.GetPinnedApps();
-                var openWindows = _windowService.GetOpenWindows();
+                var openApps = _windowService.GetOpenWindows();
 
                 var displayList = new List<DockAppItem>();
-                var matchedHwnds = new HashSet<IntPtr>();
+                var matchedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 // Add all pinned apps with their current running state
                 foreach (var p in pinned)
                 {
                     string pExeName = Path.GetFileNameWithoutExtension(p.ExecutablePath);
 
-                    var matchingWindow = openWindows.FirstOrDefault(w =>
+                    var matchingApp = openApps.FirstOrDefault(w =>
                         (!string.IsNullOrEmpty(p.ExecutablePath) && string.Equals(w.ExecutablePath, p.ExecutablePath, StringComparison.OrdinalIgnoreCase)) ||
                         (!string.IsNullOrEmpty(pExeName) && string.Equals(w.Name, pExeName, StringComparison.OrdinalIgnoreCase)));
 
-                    if (matchingWindow != null)
+                    if (matchingApp != null)
                     {
                         p.IsRunning = true;
-                        p.IsActive = matchingWindow.IsActive;
-                        p.Hwnd = matchingWindow.Hwnd;
-                        p.Title = matchingWindow.Title;
-                        matchedHwnds.Add(matchingWindow.Hwnd);
+                        p.IsActive = matchingApp.IsActive;
+                        p.Hwnd = matchingApp.Hwnd;
+                        p.OpenHwnds.Clear();
+                        p.OpenHwnds.AddRange(matchingApp.OpenHwnds);
+                        p.BadgeCount = matchingApp.BadgeCount;
+                        p.Title = matchingApp.Title;
+                        p.ShowSeparatorBefore = false;
+
+                        string key = !string.IsNullOrEmpty(matchingApp.ExecutablePath) ? matchingApp.ExecutablePath : matchingApp.Name;
+                        matchedKeys.Add(key);
                     }
                     else
                     {
                         p.IsRunning = false;
                         p.IsActive = false;
                         p.Hwnd = IntPtr.Zero;
-                        p.Title = p.Name;
+                        p.OpenHwnds.Clear();
+                        p.BadgeCount = 0;
+                        p.ShowSeparatorBefore = false;
                     }
 
                     displayList.Add(p);
                 }
 
-                // Add other open windows that aren't pinned
-                foreach (var w in openWindows)
+                // Add other open apps that aren't pinned
+                bool isFirstUnpinned = true;
+                foreach (var w in openApps)
                 {
-                    if (!matchedHwnds.Contains(w.Hwnd))
+                    string key = !string.IsNullOrEmpty(w.ExecutablePath) ? w.ExecutablePath : w.Name;
+                    if (!matchedKeys.Contains(key))
                     {
+                        w.IsPinned = false;
+                        w.ShowSeparatorBefore = isFirstUnpinned && pinned.Count > 0;
+                        isFirstUnpinned = false;
                         displayList.Add(w);
+                    }
+                }
+
+                // Preserve existing scale if mouse is hovering
+                if (ItemsDockApps.ItemsSource is IList<DockAppItem> existingList && existingList.Count == displayList.Count)
+                {
+                    for (int i = 0; i < displayList.Count; i++)
+                    {
+                        displayList[i].Scale = existingList[i].Scale;
                     }
                 }
 
                 ItemsDockApps.ItemsSource = displayList;
             }
             catch { }
+        }
+
+        private void ItemsDockApps_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (ItemsDockApps.ItemsSource is not IList<DockAppItem> items || items.Count == 0)
+                return;
+
+            Point mousePos = e.GetPosition(ItemsDockApps);
+            double mouseX = mousePos.X;
+            const double waveRadius = 90.0;
+            const double maxScale = 1.38;
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                var container = ItemsDockApps.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
+                if (container == null) continue;
+
+                Point itemCenter = container.TransformToAncestor(ItemsDockApps).Transform(new Point(container.ActualWidth / 2.0, 0));
+                double distance = Math.Abs(mouseX - itemCenter.X);
+
+                if (distance < waveRadius)
+                {
+                    double factor = Math.Cos((distance / waveRadius) * (Math.PI / 2.0));
+                    items[i].Scale = 1.0 + (maxScale - 1.0) * factor;
+                }
+                else
+                {
+                    items[i].Scale = 1.0;
+                }
+            }
+        }
+
+        private void ItemsDockApps_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (ItemsDockApps.ItemsSource is not IList<DockAppItem> items)
+                return;
+
+            foreach (var item in items)
+            {
+                item.Scale = 1.0;
+            }
         }
 
         private static string FormatCompactSpeed(double bytes)
@@ -251,9 +314,9 @@ namespace WinTaskbar.Views
         {
             if (sender is Button btn && btn.DataContext is DockAppItem item)
             {
-                if (item.IsRunning && item.Hwnd != IntPtr.Zero)
+                if (item.IsRunning)
                 {
-                    _windowService.ToggleWindow(item.Hwnd);
+                    _windowService.ToggleApp(item);
                 }
                 else if (!string.IsNullOrEmpty(item.ExecutablePath))
                 {

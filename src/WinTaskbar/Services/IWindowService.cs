@@ -10,6 +10,7 @@ namespace WinTaskbar.Services
         void ActivateWindow(IntPtr hWnd);
         void MinimizeWindow(IntPtr hWnd);
         void ToggleWindow(IntPtr hWnd);
+        void ToggleApp(DockAppItem app);
         void CloseWindow(IntPtr hWnd);
     }
 }
