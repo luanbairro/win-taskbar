@@ -69,7 +69,16 @@ namespace WinTaskbar.Views
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            TaskbarHelper.ApplyWindows11Styling(this, roundCorners: true);
+            var helper = new System.Windows.Interop.WindowInteropHelper(this);
+            IntPtr hwnd = helper.EnsureHandle();
+
+            // Disable DWM window frame rounding on this transparent window to completely remove square outline
+            int doNotRound = (int)NativeMethods.DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND;
+            NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_WINDOW_CORNER_PREFERENCE, ref doNotRound, sizeof(int));
+
+            int darkMode = 1;
+            NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref darkMode, sizeof(int));
+
             TaskbarHelper.EnsureTopMost(this);
 
             RepositionOnScreen();
@@ -90,8 +99,17 @@ namespace WinTaskbar.Views
             double dockWidth = ActualWidth > 0 ? ActualWidth : 760;
             double dockHeight = ActualHeight > 0 ? ActualHeight : 76;
 
-            Left = Math.Max(10, (screenW - dockWidth) / 2);
-            Top = screenH - dockHeight - 2;
+            double targetLeft = Math.Max(10, Math.Round((screenW - dockWidth) / 2.0));
+            double targetTop = Math.Round(screenH - dockHeight - 2);
+
+            if (Math.Abs(Left - targetLeft) > 1.0)
+            {
+                Left = targetLeft;
+            }
+            if (Math.Abs(Top - targetTop) > 1.0)
+            {
+                Top = targetTop;
+            }
         }
 
         private void OnTimerTick(object? sender, EventArgs e)

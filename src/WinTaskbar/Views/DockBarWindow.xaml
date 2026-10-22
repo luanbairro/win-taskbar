@@ -15,7 +15,7 @@
         <ResourceDictionary Source="/Styles/FluentTheme.xaml" />
     </Window.Resources>
 
-    <!-- Liquid Glass Dock Container (Leaves headroom above for macOS wave scaling) -->
+    <!-- Liquid Glass Dock Container (No square DWM/DropShadow box) -->
     <Border VerticalAlignment="Bottom"
             Height="54"
             Background="#E6161619"
@@ -24,9 +24,6 @@
             CornerRadius="26"
             Padding="8,4"
             Margin="6,0,6,6">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.45" Color="#000000" />
-        </Border.Effect>
 
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
@@ -63,16 +60,15 @@
                         BorderThickness="1"
                         Cursor="Hand"
                         Height="34"
+                        Width="92"
                         Margin="6,0,0,0"
-                        Padding="10,0"
                         Click="BtnSearchLauncher_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="b" Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="17"
-                                    Padding="{TemplateBinding Padding}">
+                                    CornerRadius="17">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -83,8 +79,8 @@
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="🔍" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="🔍" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,5,0" VerticalAlignment="Center" />
                         <TextBlock Text="Buscar..." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
@@ -160,9 +156,6 @@
                                             Height="14" MinWidth="14"
                                             Padding="3,0"
                                             Margin="0,0,-4,0">
-                                        <Border.Effect>
-                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.5" Color="#000000" />
-                                        </Border.Effect>
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -214,11 +207,11 @@
             <!-- Vertical Divider -->
             <Rectangle Width="1" Fill="#26FFFFFF" Margin="10,6" Height="24" />
 
-            <!-- SECTION 3: SPOTIFY / MEDIA LIVE WIDGET -->
+            <!-- SECTION 3: SPOTIFY / MEDIA LIVE WIDGET (Fixed Width: 175px) -->
             <Button x:Name="BtnMedia" Click="BtnMedia_Click"
                     ToolTip="Spotify / Reprodutor de Mídia"
                     Background="Transparent" BorderThickness="0" Cursor="Hand"
-                    Padding="6,2" Height="36">
+                    Padding="4,2" Height="36" Width="175">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="18" Padding="{TemplateBinding Padding}">
@@ -231,38 +224,46 @@
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Button.Template>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="165">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="112" />
+                        <ColumnDefinition Width="26" />
+                    </Grid.ColumnDefinitions>
+
                     <!-- Spotify Green Badge -->
-                    <Border Width="22" Height="22" CornerRadius="11" Background="#1DB954" Margin="0,0,6,0">
-                        <TextBlock Text="♫" FontSize="11" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border Grid.Column="0" Width="20" Height="20" CornerRadius="10" Background="#1DB954" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <TextBlock Text="♫" FontSize="10" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-                    <!-- Track Title / Status -->
-                    <TextBlock x:Name="TxtMediaStatus" Text="Spotify"
+
+                    <!-- Track Title / Status (Fixed Width: 110px) -->
+                    <TextBlock Grid.Column="1" x:Name="TxtMediaStatus" Text="Spotify"
                                FontSize="11" Foreground="{StaticResource TextPrimaryBrush}"
-                               VerticalAlignment="Center" MaxWidth="130"
-                               TextTrimming="CharacterEllipsis" />
+                               VerticalAlignment="Center" HorizontalAlignment="Left"
+                               Width="110" TextTrimming="CharacterEllipsis" />
+
                     <!-- Mini Play/Pause Quick Button -->
-                    <Button x:Name="BtnQuickPlayPause" Click="BtnQuickPlayPause_Click"
-                            ToolTip="Play / Pause" Width="22" Height="22" Margin="6,0,0,0"
-                            Background="Transparent" BorderThickness="0" Cursor="Hand">
+                    <Button Grid.Column="2" x:Name="BtnQuickPlayPause" Click="BtnQuickPlayPause_Click"
+                            ToolTip="Play / Pause" Width="22" Height="22"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
                         <TextBlock x:Name="TxtQuickPlayPauseIcon" Text="▶" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Button>
-                </StackPanel>
+                </Grid>
             </Button>
 
             <!-- Vertical Divider -->
             <Rectangle Width="1" Fill="#26FFFFFF" Margin="10,6" Height="24" />
 
-            <!-- SECTION 4: SYSTEM LIVE WIDGETS (WINTASKBAR MONITORS) -->
+            <!-- SECTION 4: SYSTEM LIVE WIDGETS (Strictly Fixed Widths to prevent any dock resizing) -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
-                <!-- CPU Widget -->
+                <!-- CPU Widget (Fixed Width: 56px) -->
                 <Button x:Name="BtnCpu" Click="BtnCpu_Click"
                         ToolTip="Monitor de CPU"
-                        Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6,2" Height="34">
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="56">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -272,19 +273,19 @@
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="⚙" FontFamily="Segoe UI Symbol" FontSize="13" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock x:Name="TxtCpuQuick" Text="0%" Style="{StaticResource ValueTextStyle}" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtCpuQuick" Text="0%" Style="{StaticResource ValueTextStyle}" FontSize="11" VerticalAlignment="Center" Width="30" TextAlignment="Left" />
                     </StackPanel>
                 </Button>
 
-                <!-- RAM Widget -->
+                <!-- RAM Widget (Fixed Width: 86px) -->
                 <Button x:Name="BtnRam" Click="BtnRam_Click"
                         ToolTip="Monitor de Memória RAM"
-                        Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6,2" Height="34">
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="86">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -294,20 +295,20 @@
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="▦" FontFamily="Segoe UI Symbol" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
                         <ProgressBar x:Name="BarRamQuick" Width="26" Height="5" Maximum="100" Value="0" Style="{StaticResource FluentProgressBarStyle}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock x:Name="TxtRamQuick" Text="0%" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtRamQuick" Text="0%" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Width="26" TextAlignment="Left" />
                     </StackPanel>
                 </Button>
 
-                <!-- Disk Widget -->
+                <!-- Disk Widget (Fixed Width: 72px) -->
                 <Button x:Name="BtnDisk" Click="BtnDisk_Click"
                         ToolTip="Monitor de Disco (Leitura/Escrita)"
-                        Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6,2" Height="34">
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="72">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -317,19 +318,19 @@
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="🖴" FontFamily="Segoe UI Symbol" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock x:Name="TxtDiskQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtDiskQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" Width="46" TextAlignment="Left" />
                     </StackPanel>
                 </Button>
 
-                <!-- Network Widget -->
+                <!-- Network Widget (Fixed Width: 72px) -->
                 <Button x:Name="BtnNet" Click="BtnNet_Click"
                         ToolTip="Monitor de Rede (Download/Upload)"
-                        Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6,2" Height="34">
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" Height="34" Width="72">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -339,17 +340,15 @@
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="⇅" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,2,0" />
-                        <TextBlock x:Name="TxtNetQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="⇅" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                        <TextBlock x:Name="TxtNetQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" Width="46" TextAlignment="Left" />
                     </StackPanel>
                 </Button>
 
-                <!-- Clock / Date Widget -->
-                <Border Background="#1AFFFFFF" CornerRadius="10" Padding="8,4" Margin="4,0,0,0" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtClock" Text="12:00" FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
+                <!-- Clock / Date Widget (Fixed Width: 46px) -->
+                <Border Background="#1AFFFFFF" CornerRadius="10" Height="28" Width="46" Margin="4,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtClock" Text="12:00" FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                 </Border>
             </StackPanel>
 
