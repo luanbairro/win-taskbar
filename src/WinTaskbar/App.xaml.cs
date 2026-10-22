@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
+using WinTaskbar.Native;
 using WinTaskbar.Services;
 using WinTaskbar.Views;
 using Application = System.Windows.Application;
@@ -14,7 +15,8 @@ namespace WinTaskbar
     {
         private static Mutex? _singleInstanceMutex;
         private NotifyIcon? _notifyIcon;
-        private TaskbarOverlayWindow? _overlayWindow;
+        private DockBarWindow? _dockWindow;
+        private bool _isWindowsTaskbarHidden;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -36,6 +38,8 @@ namespace WinTaskbar
             var memoryService = new MemoryService();
             var diskService = new DiskService();
             var networkService = new NetworkService();
+            var windowService = new WindowService();
+            var launcherService = new AppLauncherService();
 
             // Initial updates
             cpuService.Update();
@@ -46,43 +50,84 @@ namespace WinTaskbar
             // Initialize System Tray Icon
             InitializeTrayIcon();
 
-            // Launch Overlay Bar
-            _overlayWindow = new TaskbarOverlayWindow(cpuService, memoryService, diskService, networkService);
-            _overlayWindow.Show();
+            // Launch Floating Liquid Glass Dock
+            _dockWindow = new DockBarWindow(
+                cpuService,
+                memoryService,
+                diskService,
+                networkService,
+                windowService,
+                launcherService);
+
+            _dockWindow.Show();
         }
 
         private void InitializeTrayIcon()
         {
             _notifyIcon = new NotifyIcon
             {
-                Text = "WinTaskbar Monitor (Windows 11)",
+                Text = "WinTaskbar Dock & Menu Iniciar (Windows 11)",
                 Icon = SystemIcons.Application,
                 Visible = true
             };
 
             var contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Repositionar na Barra", null, (s, e) => _overlayWindow?.RepositionOnTaskbar());
-            contextMenu.Items.Add(new ToolStripSeparator());
-            contextMenu.Items.Add("Sobre o WinTaskbar", null, (s, e) =>
+            contextMenu.Items.Add("Centralizar Dock", null, (s, e) => _dockWindow?.RepositionOnScreen());
+
+            var taskbarToggleItem = new ToolStripMenuItem("Ocultar Barra do Windows (Modo Imersivo)");
+            taskbarToggleItem.Click += (s, e) =>
             {
-                MessageBox.Show("WinTaskbar Monitor v1.0\nMonitor de CPU, RAM, Disco e Rede para Windows 11\nDesenvolvido por Luan Bairro.",
-                    "Sobre o WinTaskbar", MessageBoxButton.OK, MessageBoxImage.Information);
+                ToggleWindowsTaskbar();
+                taskbarToggleItem.Text = _isWindowsTaskbarHidden ? "Exibir Barra Padrão do Windows" : "Ocultar Barra do Windows (Modo Imersivo)";
+            };
+            contextMenu.Items.Add(taskbarToggleItem);
+
+            contextMenu.Items.Add(new ToolStripSeparator());
+            contextMenu.Items.Add("Sobre o WinTaskbar Dock", null, (s, e) =>
+            {
+                MessageBox.Show("WinTaskbar Dock v2.0 (LumaBar Edition)\nDock Flutuante Moderna com Menu Iniciar, Gerenciador de Janelas e Monitor de Sistema.\nDesenvolvido por Luan Bairro.",
+                    "Sobre o WinTaskbar Dock", MessageBoxButton.OK, MessageBoxImage.Information);
             });
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add("Sair", null, (s, e) =>
             {
+                RestoreWindowsTaskbar();
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
-                _overlayWindow?.Close();
+                _dockWindow?.Close();
                 Shutdown();
             });
 
             _notifyIcon.ContextMenuStrip = contextMenu;
-            _notifyIcon.DoubleClick += (s, e) => _overlayWindow?.RepositionOnTaskbar();
+            _notifyIcon.DoubleClick += (s, e) => _dockWindow?.RepositionOnScreen();
+        }
+
+        private void ToggleWindowsTaskbar()
+        {
+            IntPtr trayHwnd = NativeMethods.FindWindow("Shell_TrayWnd", null);
+            if (trayHwnd != IntPtr.Zero)
+            {
+                _isWindowsTaskbarHidden = !_isWindowsTaskbarHidden;
+                NativeMethods.ShowWindow(trayHwnd, _isWindowsTaskbarHidden ? NativeMethods.SW_HIDE : NativeMethods.SW_SHOW);
+            }
+        }
+
+        private void RestoreWindowsTaskbar()
+        {
+            if (_isWindowsTaskbarHidden)
+            {
+                IntPtr trayHwnd = NativeMethods.FindWindow("Shell_TrayWnd", null);
+                if (trayHwnd != IntPtr.Zero)
+                {
+                    NativeMethods.ShowWindow(trayHwnd, NativeMethods.SW_SHOW);
+                }
+                _isWindowsTaskbarHidden = false;
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
+            RestoreWindowsTaskbar();
             if (_notifyIcon != null)
             {
                 _notifyIcon.Visible = false;
