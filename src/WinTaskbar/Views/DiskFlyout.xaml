@@ -1,0 +1,111 @@
+<Window x:Class="WinTaskbar.Views.DiskFlyout"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:WinTaskbar.Controls"
+        Title="Disk Flyout"
+        Width="310" Height="480"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Deactivated="Window_Deactivated">
+
+    <Window.Resources>
+        <ResourceDictionary Source="/Styles/FluentTheme.xaml" />
+    </Window.Resources>
+
+    <Border Background="{StaticResource FlyoutBackgroundBrush}"
+            BorderBrush="{StaticResource FlyoutBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="14"
+            Margin="6">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="3" Opacity="0.45" Direction="270" Color="Black"/>
+        </Border.Effect>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <!-- Title -->
+                <TextBlock Text="Armazenamento" Style="{StaticResource TitleTextStyle}" Margin="0,0,0,10" />
+
+                <!-- Sparkline Chart (Dual series: Read=Blue, Write=Red) -->
+                <Border Background="{StaticResource CardBackgroundBrush}" CornerRadius="8" Padding="6" Height="90" Margin="0,0,0,4">
+                    <controls:SparklineChart x:Name="DiskChart" AutoScale="True" />
+                </Border>
+                <Grid Margin="0,0,0,10">
+                    <TextBlock Text="10 minutos atrás" Style="{StaticResource LabelTextStyle}" FontSize="10" HorizontalAlignment="Left" />
+                    <TextBlock Text="agora" Style="{StaticResource LabelTextStyle}" FontSize="10" HorizontalAlignment="Right" />
+                </Grid>
+
+                <!-- Global Read/Write Stats -->
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBlock Text="Leitura Global:" Style="{StaticResource LabelTextStyle}" />
+                    </StackPanel>
+                    <TextBlock x:Name="TxtGlobalRead" Grid.Column="1" Text="0 KB/s" Style="{StaticResource ValueTextStyle}" />
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource AccentRedBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBlock Text="Escrita Global:" Style="{StaticResource LabelTextStyle}" />
+                    </StackPanel>
+                    <TextBlock x:Name="TxtGlobalWrite" Grid.Column="1" Text="0 KB/s" Style="{StaticResource ValueTextStyle}" />
+                </Grid>
+
+                <!-- Dispositivos List -->
+                <TextBlock Text="Dispositivos" Style="{StaticResource TitleTextStyle}" FontSize="12" Margin="0,0,0,8" />
+                <ItemsControl x:Name="ListDrives">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource CardBackgroundBrush}" CornerRadius="6" Padding="8" Margin="0,0,0,6">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource ValueTextStyle}" />
+                                        <TextBlock Text="{Binding DriveLetter}" Style="{StaticResource LabelTextStyle}" HorizontalAlignment="Right" />
+                                    </Grid>
+
+                                    <!-- Progress bar with Total Size & Usage % -->
+                                    <Grid Margin="0,0,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding FormattedTotal}" Style="{StaticResource LabelTextStyle}" FontSize="11" Margin="0,0,6,0" />
+                                        <ProgressBar Grid.Column="1" Value="{Binding UsagePercentage}" Maximum="100" Style="{StaticResource FluentProgressBarStyle}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" Text="{Binding UsagePercentage, StringFormat={}{0:F0}%}" Style="{StaticResource LabelTextStyle}" FontSize="11" Margin="6,0,0,0" />
+                                    </Grid>
+
+                                    <!-- Read and Write speed for drive -->
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="L ↑ " Foreground="{StaticResource AccentCyanBrush}" FontSize="10" />
+                                            <TextBlock Text="{Binding FormattedReadSpeed}" Style="{StaticResource LabelTextStyle}" FontSize="10" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="E ↓ " Foreground="{StaticResource AccentRedBrush}" FontSize="10" />
+                                            <TextBlock Text="{Binding FormattedWriteSpeed}" Style="{StaticResource LabelTextStyle}" FontSize="10" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</Window>

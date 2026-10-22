@@ -1,0 +1,137 @@
+<Window x:Class="WinTaskbar.Views.TaskbarOverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinTaskbar Overlay"
+        Height="40" Width="380"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Window.Resources>
+        <ResourceDictionary Source="/Styles/FluentTheme.xaml" />
+    </Window.Resources>
+
+    <Border Background="#CC1E1E20"
+            BorderBrush="{StaticResource FlyoutBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="4,2"
+            Margin="2">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.3" Color="Black"/>
+        </Border.Effect>
+
+        <Grid VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <!-- CPU Widget -->
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1" />
+                <!-- RAM Widget -->
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1" />
+                <!-- Disk Widget -->
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1" />
+                <!-- Net Widget -->
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Widget 1: CPU -->
+            <Button x:Name="BtnCpu" Grid.Column="0" Click="BtnCpu_Click"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,2">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="⚙" FontFamily="Segoe UI Symbol" FontSize="13" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <TextBlock x:Name="TxtCpuQuick" Text="0%" Style="{StaticResource ValueTextStyle}" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <!-- Divider -->
+            <Rectangle Grid.Column="1" Fill="#33FFFFFF" Margin="0,4" />
+
+            <!-- Widget 2: RAM -->
+            <Button x:Name="BtnRam" Grid.Column="2" Click="BtnRam_Click"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,2">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="▦" FontFamily="Segoe UI Symbol" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <ProgressBar x:Name="BarRamQuick" Width="28" Height="5" Maximum="100" Value="0" Style="{StaticResource FluentProgressBarStyle}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <!-- Divider -->
+            <Rectangle Grid.Column="3" Fill="#33FFFFFF" Margin="0,4" />
+
+            <!-- Widget 3: DISK -->
+            <Button x:Name="BtnDisk" Grid.Column="4" Click="BtnDisk_Click"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,2">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🖴" FontFamily="Segoe UI Symbol" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <TextBlock x:Name="TxtDiskQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <!-- Divider -->
+            <Rectangle Grid.Column="5" Fill="#33FFFFFF" Margin="0,4" />
+
+            <!-- Widget 4: NETWORK -->
+            <Button x:Name="BtnNet" Grid.Column="6" Click="BtnNet_Click"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,2">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="⇅" FontSize="12" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" Margin="0,0,2,0" />
+                    <TextBlock x:Name="TxtNetQuick" Text="0 KB/s" Style="{StaticResource LabelTextStyle}" FontSize="10" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</Window>
