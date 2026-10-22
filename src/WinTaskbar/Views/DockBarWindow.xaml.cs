@@ -20,12 +20,14 @@ namespace WinTaskbar.Views
         private readonly INetworkService _networkService;
         private readonly IWindowService _windowService;
         private readonly IAppLauncherService _launcherService;
+        private readonly IMediaService _mediaService;
 
         private readonly CpuFlyout _cpuFlyout;
         private readonly MemoryFlyout _memoryFlyout;
         private readonly DiskFlyout _diskFlyout;
         private readonly NetworkFlyout _networkFlyout;
         private readonly StartMenuFlyout _startMenuFlyout;
+        private readonly MediaFlyout _mediaFlyout;
 
         private readonly DispatcherTimer _timer;
 
@@ -35,7 +37,8 @@ namespace WinTaskbar.Views
             IDiskService diskService,
             INetworkService networkService,
             IWindowService windowService,
-            IAppLauncherService launcherService)
+            IAppLauncherService launcherService,
+            IMediaService mediaService)
         {
             InitializeComponent();
 
@@ -45,12 +48,14 @@ namespace WinTaskbar.Views
             _networkService = networkService;
             _windowService = windowService;
             _launcherService = launcherService;
+            _mediaService = mediaService;
 
             _cpuFlyout = new CpuFlyout(_cpuService);
             _memoryFlyout = new MemoryFlyout(_memoryService);
             _diskFlyout = new DiskFlyout(_diskService);
             _networkFlyout = new NetworkFlyout(_networkService);
             _startMenuFlyout = new StartMenuFlyout(_launcherService);
+            _mediaFlyout = new MediaFlyout(_mediaService);
 
             _timer = new DispatcherTimer
             {
@@ -79,7 +84,7 @@ namespace WinTaskbar.Views
             double screenW = SystemParameters.PrimaryScreenWidth;
             double screenH = SystemParameters.PrimaryScreenHeight;
 
-            double dockWidth = ActualWidth > 0 ? ActualWidth : 700;
+            double dockWidth = ActualWidth > 0 ? ActualWidth : 760;
             double dockHeight = ActualHeight > 0 ? ActualHeight : 54;
 
             Left = Math.Max(10, (screenW - dockWidth) / 2);
@@ -92,6 +97,7 @@ namespace WinTaskbar.Views
             _memoryService.Update();
             _diskService.Update();
             _networkService.Update();
+            _ = _mediaService.UpdateAsync();
 
             UpdateQuickStats();
             RefreshDockApps();
@@ -101,6 +107,7 @@ namespace WinTaskbar.Views
             if (_memoryFlyout.IsVisible) _memoryFlyout.UpdateView();
             if (_diskFlyout.IsVisible) _diskFlyout.UpdateView();
             if (_networkFlyout.IsVisible) _networkFlyout.UpdateView();
+            if (_mediaFlyout.IsVisible) _mediaFlyout.UpdateView();
         }
 
         private void UpdateQuickStats()
@@ -116,6 +123,19 @@ namespace WinTaskbar.Views
             TxtNetQuick.Text = FormatCompactSpeed(maxNetSpeed);
 
             TxtClock.Text = DateTime.Now.ToString("HH:mm");
+
+            // Update Media Pill
+            var track = _mediaService.CurrentTrack;
+            if (track.HasMedia)
+            {
+                TxtMediaStatus.Text = track.DisplayTitle;
+                TxtQuickPlayPauseIcon.Text = track.IsPlaying ? "⏸" : "▶";
+            }
+            else
+            {
+                TxtMediaStatus.Text = "Spotify";
+                TxtQuickPlayPauseIcon.Text = "▶";
+            }
         }
 
         private void RefreshDockApps()
@@ -281,6 +301,18 @@ namespace WinTaskbar.Views
             }
         }
 
+        private void BtnMedia_Click(object sender, RoutedEventArgs e)
+        {
+            _mediaFlyout.UpdateView();
+            PositionAndShowFlyout(_mediaFlyout, BtnMedia);
+        }
+
+        private async void BtnQuickPlayPause_Click(object sender, RoutedEventArgs e)
+        {
+            await _mediaService.TogglePlayPauseAsync();
+            e.Handled = true;
+        }
+
         private void PositionAndShowFlyout(Window flyout, FrameworkElement sourceButton)
         {
             if (flyout.IsVisible)
@@ -318,6 +350,7 @@ namespace WinTaskbar.Views
             _diskFlyout.Hide();
             _networkFlyout.Hide();
             _startMenuFlyout.Hide();
+            _mediaFlyout.Hide();
         }
 
         private void BtnCpu_Click(object sender, RoutedEventArgs e)
@@ -352,6 +385,7 @@ namespace WinTaskbar.Views
             _diskFlyout.Close();
             _networkFlyout.Close();
             _startMenuFlyout.Close();
+            _mediaFlyout.Close();
             base.OnClosed(e);
         }
     }

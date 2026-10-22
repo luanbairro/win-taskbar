@@ -161,7 +161,46 @@
             <!-- Vertical Divider -->
             <Rectangle Width="1" Fill="#26FFFFFF" Margin="10,6" Height="24" />
 
-            <!-- SECTION 3: SYSTEM LIVE WIDGETS (WINTASKBAR MONITORS) -->
+            <!-- SECTION 3: SPOTIFY / MEDIA LIVE WIDGET -->
+            <Button x:Name="BtnMedia" Click="BtnMedia_Click"
+                    ToolTip="Spotify / Reprodutor de Mídia"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                    Padding="6,2" Height="36">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="18" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#26FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Spotify Green Badge -->
+                    <Border Width="22" Height="22" CornerRadius="11" Background="#1DB954" Margin="0,0,6,0">
+                        <TextBlock Text="♫" FontSize="11" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <!-- Track Title / Status -->
+                    <TextBlock x:Name="TxtMediaStatus" Text="Spotify"
+                               FontSize="11" Foreground="{StaticResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" MaxWidth="130"
+                               TextTrimming="CharacterEllipsis" />
+                    <!-- Mini Play/Pause Quick Button -->
+                    <Button x:Name="BtnQuickPlayPause" Click="BtnQuickPlayPause_Click"
+                            ToolTip="Play / Pause" Width="22" Height="22" Margin="6,0,0,0"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand">
+                        <TextBlock x:Name="TxtQuickPlayPauseIcon" Text="▶" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Button>
+
+            <!-- Vertical Divider -->
+            <Rectangle Width="1" Fill="#26FFFFFF" Margin="10,6" Height="24" />
+
+            <!-- SECTION 4: SYSTEM LIVE WIDGETS (WINTASKBAR MONITORS) -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
                 <!-- CPU Widget -->

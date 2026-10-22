@@ -40,6 +40,7 @@ namespace WinTaskbar
             var networkService = new NetworkService();
             var windowService = new WindowService();
             var launcherService = new AppLauncherService();
+            var mediaService = new MediaService();
 
             // Initial updates
             cpuService.Update();
@@ -48,7 +49,7 @@ namespace WinTaskbar
             networkService.Update();
 
             // Initialize System Tray Icon
-            InitializeTrayIcon();
+            InitializeTrayIcon(mediaService);
 
             // Launch Floating Liquid Glass Dock
             _dockWindow = new DockBarWindow(
@@ -57,12 +58,13 @@ namespace WinTaskbar
                 diskService,
                 networkService,
                 windowService,
-                launcherService);
+                launcherService,
+                mediaService);
 
             _dockWindow.Show();
         }
 
-        private void InitializeTrayIcon()
+        private void InitializeTrayIcon(IMediaService mediaService)
         {
             _notifyIcon = new NotifyIcon
             {
@@ -73,6 +75,7 @@ namespace WinTaskbar
 
             var contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add("Centralizar Dock", null, (s, e) => _dockWindow?.RepositionOnScreen());
+            contextMenu.Items.Add("Abrir Spotify", null, (s, e) => mediaService.OpenSpotify());
 
             var taskbarToggleItem = new ToolStripMenuItem("Ocultar Barra do Windows (Modo Imersivo)");
             taskbarToggleItem.Click += (s, e) =>
@@ -85,7 +88,7 @@ namespace WinTaskbar
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add("Sobre o WinTaskbar Dock", null, (s, e) =>
             {
-                MessageBox.Show("WinTaskbar Dock v2.0 (LumaBar Edition)\nDock Flutuante Moderna com Menu Iniciar, Gerenciador de Janelas e Monitor de Sistema.\nDesenvolvido por Luan Bairro.",
+                MessageBox.Show("WinTaskbar Dock v2.1 (LumaBar + Spotify Edition)\nDock Flutuante Moderna com Menu Iniciar, Gerenciador de Janelas, Spotify e Monitor de Sistema.\nDesenvolvido por Luan Bairro.",
                     "Sobre o WinTaskbar Dock", MessageBoxButton.OK, MessageBoxImage.Information);
             });
             contextMenu.Items.Add(new ToolStripSeparator());

@@ -1,0 +1,162 @@
+<Window x:Class="WinTaskbar.Views.MediaFlyout"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Controles de Mídia"
+        Width="320" Height="360"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Deactivated="Window_Deactivated"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <ResourceDictionary Source="/Styles/FluentTheme.xaml" />
+    </Window.Resources>
+
+    <Border Background="#E618181C"
+            BorderBrush="{StaticResource FlyoutBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="16"
+            Margin="10">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="22" ShadowDepth="5" Opacity="0.5" Color="#000000" />
+        </Border.Effect>
+
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <!-- Header -->
+                <RowDefinition Height="Auto" />
+                <!-- Album Art & Track Info -->
+                <RowDefinition Height="*" />
+                <!-- Controls -->
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🟢" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtAppHeader" Text="Spotify" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+                <Button x:Name="BtnOpenApp" Content="Abrir App ↗" HorizontalAlignment="Right"
+                        Background="#26FFFFFF" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderThickness="0" Cursor="Hand" Padding="8,4" FontSize="10"
+                        Click="BtnOpenApp_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#3DFFFFFF" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+
+            <!-- Center Content -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <!-- Album Art / Thumbnail -->
+                <Border Width="130" Height="130" CornerRadius="12" Background="#26262B" ClipToBounds="True" Margin="0,0,0,12" HorizontalAlignment="Center">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.4" Color="#000000" />
+                    </Border.Effect>
+                    <Grid>
+                        <!-- Fallback Music Note / Disc -->
+                        <TextBlock Text="♫" FontSize="50" Foreground="#44FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <!-- Real Thumbnail Image -->
+                        <Image x:Name="ImgThumbnail" Stretch="UniformToFill" />
+                    </Grid>
+                </Border>
+
+                <!-- Track Title -->
+                <TextBlock x:Name="TxtTitle" Text="Nenhuma música tocando"
+                           FontWeight="SemiBold" FontSize="14"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           TextAlignment="Center" TextTrimming="CharacterEllipsis"
+                           MaxWidth="260" Margin="0,0,0,3" />
+
+                <!-- Artist -->
+                <TextBlock x:Name="TxtArtist" Text="Abra o Spotify para reproduzir"
+                           FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                           TextAlignment="Center" TextTrimming="CharacterEllipsis"
+                           MaxWidth="260" />
+
+                <!-- Album (optional) -->
+                <TextBlock x:Name="TxtAlbum" Text=""
+                           FontSize="10" Foreground="#55FFFFFF"
+                           TextAlignment="Center" TextTrimming="CharacterEllipsis"
+                           MaxWidth="260" Margin="0,2,0,0" />
+            </StackPanel>
+
+            <!-- Bottom Controls -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0">
+                <!-- Previous Button -->
+                <Button x:Name="BtnPrev" Width="36" Height="36" Cursor="Hand" Margin="8,0"
+                        Background="#26FFFFFF" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderThickness="0" Click="BtnPrev_Click" ToolTip="Anterior">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="18">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#3FFFFFFF" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <TextBlock Text="⏮" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Play / Pause Button (Spotify Green Glow) -->
+                <Button x:Name="BtnPlayPause" Width="46" Height="46" Cursor="Hand" Margin="8,0"
+                        Background="#1DB954" Foreground="#121212"
+                        BorderThickness="0" Click="BtnPlayPause_Click" ToolTip="Reproduzir / Pausar">
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.4" Color="#1DB954" />
+                    </Button.Effect>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="23">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#1ED760" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <TextBlock x:Name="TxtPlayPauseIcon" Text="▶" FontSize="18" FontWeight="Bold" Margin="2,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Next Button -->
+                <Button x:Name="BtnNext" Width="36" Height="36" Cursor="Hand" Margin="8,0"
+                        Background="#26FFFFFF" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderThickness="0" Click="BtnNext_Click" ToolTip="Próxima">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="18">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#3FFFFFFF" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <TextBlock Text="⏭" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
