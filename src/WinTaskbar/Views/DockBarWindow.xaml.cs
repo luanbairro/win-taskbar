@@ -70,9 +70,12 @@ namespace WinTaskbar.Views
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             TaskbarHelper.ApplyWindows11Styling(this, roundCorners: true);
-            TaskbarHelper.SetToolWindow(this);
+            TaskbarHelper.EnsureTopMost(this);
 
             RepositionOnScreen();
+
+            // Reserve bottom work area so maximized windows (WhatsApp, Chrome, etc.) stop above dock
+            TaskbarHelper.ReserveWorkArea(64);
 
             _timer.Start();
             UpdateQuickStats();
@@ -93,6 +96,8 @@ namespace WinTaskbar.Views
 
         private void OnTimerTick(object? sender, EventArgs e)
         {
+            TaskbarHelper.EnsureTopMost(this);
+
             _cpuService.Update();
             _memoryService.Update();
             _diskService.Update();
@@ -377,9 +382,18 @@ namespace WinTaskbar.Views
             PositionAndShowFlyout(_networkFlyout, BtnNet);
         }
 
+        public void SetReserveWorkArea(bool enable)
+        {
+            if (enable)
+                TaskbarHelper.ReserveWorkArea(64);
+            else
+                TaskbarHelper.RestoreWorkArea();
+        }
+
         protected override void OnClosed(EventArgs e)
         {
             _timer.Stop();
+            TaskbarHelper.RestoreWorkArea();
             _cpuFlyout.Close();
             _memoryFlyout.Close();
             _diskFlyout.Close();

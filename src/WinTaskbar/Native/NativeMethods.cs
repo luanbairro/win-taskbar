@@ -10,6 +10,7 @@ namespace WinTaskbar.Native
         public const int WS_EX_APPWINDOW = 0x00040000;
         public const int WS_EX_LAYERED = 0x00080000;
         public const int WS_EX_NOACTIVATE = 0x08000000;
+        public const int WS_EX_TOPMOST = 0x00000008;
         public const int GWL_EXSTYLE = -20;
         public const int GWL_STYLE = -16;
 
@@ -17,7 +18,13 @@ namespace WinTaskbar.Native
         public const uint SWP_NOMOVE = 0x0002;
         public const uint SWP_NOZORDER = 0x0004;
         public const uint SWP_NOACTIVATE = 0x0010;
+        public const uint SWP_FRAMECHANGED = 0x0020;
         public const uint SWP_SHOWWINDOW = 0x0040;
+
+        public const uint SPI_GETWORKAREA = 0x0030;
+        public const uint SPI_SETWORKAREA = 0x002F;
+        public const uint SPIF_UPDATEINIFILE = 0x01;
+        public const uint SPIF_SENDCHANGE = 0x02;
 
         public const int SW_HIDE = 0;
         public const int SW_SHOWNORMAL = 1;
@@ -157,6 +164,10 @@ namespace WinTaskbar.Native
 
         [DllImport("user32.dll")]
         public static extern bool LockWorkStation();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, ref RECT pvParam, uint fWinIni);
 
         // Windows 11 DWM attributes for Rounded Corners & Mica/Dark mode
         public const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;

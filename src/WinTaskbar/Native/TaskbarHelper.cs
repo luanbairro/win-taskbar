@@ -7,6 +7,9 @@ namespace WinTaskbar.Native
 {
     public static class TaskbarHelper
     {
+        private static NativeMethods.RECT? _originalWorkArea;
+        private static bool _isWorkAreaReserved;
+
         public struct TaskbarInfo
         {
             public NativeMethods.RECT Rect;
@@ -91,6 +94,81 @@ namespace WinTaskbar.Native
             int exStyle = NativeMethods.GetWindowLong(hwnd, NativeMethods.GWL_EXSTYLE);
             exStyle |= NativeMethods.WS_EX_TOOLWINDOW;
             NativeMethods.SetWindowLong(hwnd, NativeMethods.GWL_EXSTYLE, exStyle);
+            NativeMethods.SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0,
+                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOZORDER | NativeMethods.SWP_FRAMECHANGED);
+        }
+
+        public static void EnsureTopMost(Window window)
+        {
+            var helper = new WindowInteropHelper(window);
+            IntPtr hwnd = helper.EnsureHandle();
+
+            int exStyle = NativeMethods.GetWindowLong(hwnd, NativeMethods.GWL_EXSTYLE);
+            if ((exStyle & NativeMethods.WS_EX_TOPMOST) == 0)
+            {
+                exStyle |= NativeMethods.WS_EX_TOPMOST | NativeMethods.WS_EX_TOOLWINDOW;
+                NativeMethods.SetWindowLong(hwnd, NativeMethods.GWL_EXSTYLE, exStyle);
+            }
+
+            NativeMethods.SetWindowPos(
+                hwnd,
+                NativeMethods.HWND_TOPMOST,
+                0, 0, 0, 0,
+                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_SHOWWINDOW);
+        }
+
+        public static void ReserveWorkArea(int bottomMarginPixels)
+        {
+            try
+            {
+                if (!_originalWorkArea.HasValue)
+                {
+                    var current = new NativeMethods.RECT();
+                    if (NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETWORKAREA, 0, ref current, 0))
+                    {
+                        _originalWorkArea = current;
+                    }
+                }
+
+                int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
+                int screenHeight = (int)SystemParameters.PrimaryScreenHeight;
+
+                var newWorkArea = new NativeMethods.RECT
+                {
+                    Left = 0,
+                    Top = 0,
+                    Right = screenWidth,
+                    Bottom = Math.Max(100, screenHeight - bottomMarginPixels)
+                };
+
+                NativeMethods.SystemParametersInfo(
+                    NativeMethods.SPI_SETWORKAREA,
+                    0,
+                    ref newWorkArea,
+                    NativeMethods.SPIF_SENDCHANGE | NativeMethods.SPIF_UPDATEINIFILE);
+
+                _isWorkAreaReserved = true;
+            }
+            catch { }
+        }
+
+        public static void RestoreWorkArea()
+        {
+            try
+            {
+                if (_isWorkAreaReserved && _originalWorkArea.HasValue)
+                {
+                    var orig = _originalWorkArea.Value;
+                    NativeMethods.SystemParametersInfo(
+                        NativeMethods.SPI_SETWORKAREA,
+                        0,
+                        ref orig,
+                        NativeMethods.SPIF_SENDCHANGE | NativeMethods.SPIF_UPDATEINIFILE);
+
+                    _isWorkAreaReserved = false;
+                }
+            }
+            catch { }
         }
     }
 }

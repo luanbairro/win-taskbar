@@ -85,6 +85,16 @@ namespace WinTaskbar
             };
             contextMenu.Items.Add(taskbarToggleItem);
 
+            bool isAntiOverlapEnabled = true;
+            var antiOverlapItem = new ToolStripMenuItem("Anti-Sobreposição (Reservar Espaço da Tela)") { Checked = true };
+            antiOverlapItem.Click += (s, e) =>
+            {
+                isAntiOverlapEnabled = !isAntiOverlapEnabled;
+                antiOverlapItem.Checked = isAntiOverlapEnabled;
+                _dockWindow?.SetReserveWorkArea(isAntiOverlapEnabled);
+            };
+            contextMenu.Items.Add(antiOverlapItem);
+
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add("Sobre o WinTaskbar Dock", null, (s, e) =>
             {
@@ -94,6 +104,7 @@ namespace WinTaskbar
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add("Sair", null, (s, e) =>
             {
+                TaskbarHelper.RestoreWorkArea();
                 RestoreWindowsTaskbar();
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
@@ -130,6 +141,7 @@ namespace WinTaskbar
 
         protected override void OnExit(ExitEventArgs e)
         {
+            TaskbarHelper.RestoreWorkArea();
             RestoreWindowsTaskbar();
             if (_notifyIcon != null)
             {
