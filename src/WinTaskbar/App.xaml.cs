@@ -148,7 +148,12 @@ namespace WinTaskbar
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
             }
-            _singleInstanceMutex?.ReleaseMutex();
+            try
+            {
+                _singleInstanceMutex?.ReleaseMutex();
+                _singleInstanceMutex?.Dispose();
+            }
+            catch { }
             base.OnExit(e);
         }
     }

@@ -100,16 +100,10 @@ namespace WinTaskbar.Views
             double dockHeight = ActualHeight > 0 ? ActualHeight : 76;
 
             double targetLeft = Math.Max(10, Math.Round((screenW - dockWidth) / 2.0));
-            double targetTop = 0.0; // Anchored to the top bezel (Notch / Dynamic Island)
+            double targetTop = 0.0; // Anchored directly to the top edge (Notch / Dynamic Island)
 
-            if (Math.Abs(Left - targetLeft) > 1.0)
-            {
-                Left = targetLeft;
-            }
-            if (Math.Abs(Top - targetTop) > 1.0)
-            {
-                Top = targetTop;
-            }
+            Left = targetLeft;
+            Top = targetTop;
         }
 
         private void OnTimerTick(object? sender, EventArgs e)
