@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:WinTaskbar.Controls"
         Title="WinTaskbar Notch"
-        Width="560" Height="160"
+        Width="600" Height="175"
         WindowStartupLocation="Manual"
         Top="0"
         WindowStyle="None"
@@ -15,7 +15,7 @@
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Grid VerticalAlignment="Top" HorizontalAlignment="Center">
-        <!-- Physical Notch Container (MacBook / Nusa Curved Notch) -->
+        <!-- Physical Notch Container (MacBook / Nusa Curved Notch - NO SHADOW) -->
         <Grid x:Name="NotchRoot"
               Width="320" Height="32"
               HorizontalAlignment="Center"
@@ -25,17 +25,13 @@
               SizeChanged="NotchRoot_SizeChanged"
               Cursor="Arrow">
 
-            <!-- Deep Black Notch Silhouette with Concave Ears and Rounded Bottom -->
+            <!-- Deep Black Notch Silhouette with Concave Ears and Rounded Bottom (NO SHADOW) -->
             <Path x:Name="NotchBackgroundPath"
                   Fill="#000000"
                   Stroke="#1AFFFFFF"
-                  StrokeThickness="1">
-                <Path.Effect>
-                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.75" Color="#000000" />
-                </Path.Effect>
-            </Path>
+                  StrokeThickness="1" />
 
-            <!-- ================= 1. COLLAPSED NOTCH (IDENTICAL TO USER IMAGE 1) ================= -->
+            <!-- ================= 1. COLLAPSED NOTCH (COMPACT PILL) ================= -->
             <Grid x:Name="GridCollapsed" Height="30" VerticalAlignment="Top" Margin="18,0,18,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -59,7 +55,7 @@
                                FontWeight="Bold"
                                Foreground="White"
                                VerticalAlignment="Center"
-                               Margin="0,0,14,0" />
+                               Margin="0,0,12,0" />
 
                     <!-- CPU Accelerator Ring & Percentage -->
                     <controls:CircularGauge x:Name="GaugeCpuCollapsed"
@@ -76,7 +72,7 @@
                                FontWeight="SemiBold"
                                Foreground="#00D2FF"
                                VerticalAlignment="Center"
-                               Margin="0,0,12,0" />
+                               Margin="0,0,10,0" />
 
                     <!-- RAM Accelerator Ring & Percentage -->
                     <controls:CircularGauge x:Name="GaugeRamCollapsed"
@@ -102,63 +98,160 @@
                 </StackPanel>
             </Grid>
 
-            <!-- ================= 2. EXPANDED NOTCH (IDENTICAL TO USER IMAGE 2) ================= -->
-            <Grid x:Name="GridExpanded" Visibility="Collapsed" Opacity="0" Margin="24,6,24,10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" /> <!-- Header: Battery + Date & Time + Stats -->
-                    <RowDefinition Height="Auto" /> <!-- Media Info: Album Art + Titles + Arrows -->
-                    <RowDefinition Height="Auto" /> <!-- Timeline: 00:15 [====] -00:00 -->
-                    <RowDefinition Height="Auto" /> <!-- Controls: 💬 [ ◀◀  ▶  ▶▶ ] — • • • -->
-                </Grid.RowDefinitions>
+            <!-- ================= 2. EXPANDED NOTCH ================= -->
+            <Grid x:Name="GridExpanded" Visibility="Collapsed" Opacity="0" Margin="22,6,22,10">
 
-                <!-- HEADER ROW (Battery + Date/Time + Accelerator Rings) -->
-                <Grid Grid.Row="0" Margin="0,0,0,6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <!-- 2A. MODE WITH MUSIC PLAYING (SPOTIFY CARD - EXACT MATCH TO IMAGE 2) -->
+                <Grid x:Name="GridMediaView" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Header: Battery + Date & Time + Telemetry Pills -->
+                        <RowDefinition Height="Auto" /> <!-- Media Info: Album Art + Titles + Arrows -->
+                        <RowDefinition Height="Auto" /> <!-- Timeline: 00:15 [====] -00:00 -->
+                        <RowDefinition Height="Auto" /> <!-- Controls: 💬 [ ◀◀  ▶  ▶▶ ] — • • • -->
+                    </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <!-- Battery Ring -->
-                        <controls:CircularGauge x:Name="GaugeBatteryExpanded"
-                                                Width="14" Height="14"
-                                                StrokeThickness="2.2"
-                                                StrokeBrush="#00E676"
-                                                TrackBrush="#3300E676"
-                                                Value="80"
-                                                VerticalAlignment="Center"
-                                                Margin="0,0,8,0" />
+                    <!-- HEADER ROW (Battery + Date/Time + Clickable Accelerator Pills) -->
+                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Full Date & Time (Fri 23 Oct 2026 20:05) -->
-                        <TextBlock x:Name="TxtDateTimeExpanded"
-                                   Text="Fri 23 Oct 2026 20:05"
-                                   FontSize="11"
-                                   FontWeight="SemiBold"
-                                   Foreground="White"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Battery Ring -->
+                            <controls:CircularGauge x:Name="GaugeBatteryExpanded"
+                                                    Width="14" Height="14"
+                                                    StrokeThickness="2.2"
+                                                    StrokeBrush="#00E676"
+                                                    TrackBrush="#3300E676"
+                                                    Value="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0" />
 
-                    <!-- CPU and RAM Pills on Header Right -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <controls:CircularGauge x:Name="GaugeCpuExpanded" Width="12" Height="12" StrokeThickness="2" StrokeBrush="#00D2FF" TrackBrush="#2600D2FF" Value="15" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock x:Name="TxtCpuExpanded" Text="15%" FontSize="10" Foreground="#00D2FF" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <!-- Full Date & Time (Fri 23 Oct 2026 20:05) -->
+                            <TextBlock x:Name="TxtDateTimeExpanded"
+                                       Text="Fri 23 Oct 2026 20:05"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
 
-                        <controls:CircularGauge x:Name="GaugeRamExpanded" Width="12" Height="12" StrokeThickness="2" StrokeBrush="#A855F7" TrackBrush="#26A855F7" Value="48" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock x:Name="TxtRamExpanded" Text="48%" FontSize="10" Foreground="#A855F7" FontWeight="SemiBold" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Grid>
+                        <!-- Telemetry Clickable Pills: CPU, RAM, Disk, Net (Open Detailed Flyouts) -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <!-- CPU Pill Button -->
+                            <Button x:Name="BtnCpuMedia" Click="BtnCpu_Click" ToolTip="Telemetria de CPU" Background="#16FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1" Height="22" Padding="6,0" Margin="0,0,4,0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <controls:CircularGauge x:Name="GaugeCpuMedia" Width="10" Height="10" StrokeThickness="1.8" StrokeBrush="#00D2FF" TrackBrush="#2600D2FF" Value="15" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <TextBlock x:Name="TxtCpuMedia" Text="15%" FontSize="10" Foreground="#00D2FF" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
 
-                <!-- ROW 1: ALBUM ART + TITLES + PREV/NEXT ARROWS -->
-                <Grid Grid.Row="1" Margin="0,0,0,6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                            <!-- RAM Pill Button -->
+                            <Button x:Name="BtnRamMedia" Click="BtnRam_Click" ToolTip="Telemetria de Memória" Background="#16FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1" Height="22" Padding="6,0" Margin="0,0,4,0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <controls:CircularGauge x:Name="GaugeRamMedia" Width="10" Height="10" StrokeThickness="1.8" StrokeBrush="#A855F7" TrackBrush="#26A855F7" Value="48" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <TextBlock x:Name="TxtRamMedia" Text="48%" FontSize="10" Foreground="#A855F7" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
 
-                    <!-- Left: Prev Arrow '<' + Album Art -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button x:Name="BtnArrowPrev" Click="BtnPrevTrack_Click" Width="22" Height="22" Background="#26FFFFFF" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
+                            <!-- Disk Pill Button -->
+                            <Button x:Name="BtnDiskMedia" Click="BtnDisk_Click" ToolTip="Telemetria de Disco" Background="#16FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1" Height="22" Padding="6,0" Margin="0,0,4,0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="💾" FontSize="9" Margin="0,0,3,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtDiskMedia" Text="0B/s" FontSize="10" Foreground="#F59E0B" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Net Pill Button -->
+                            <Button x:Name="BtnNetMedia" Click="BtnNet_Click" ToolTip="Telemetria de Rede" Background="#16FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1" Height="22" Padding="6,0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="🌐" FontSize="9" Margin="0,0,3,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtNetMedia" Text="0B/s" FontSize="10" Foreground="#34D399" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- ROW 1: ALBUM ART + TITLES + PREV/NEXT ARROWS -->
+                    <Grid Grid.Row="1" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Prev Arrow '<' + Album Art -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="BtnArrowPrev" Click="BtnPrevTrack_Click" Width="22" Height="22" Background="#26FFFFFF" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="11">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock Text="‹" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,-3,0,0" />
+                            </Button>
+
+                            <!-- Album Art (52x52 rounded corners) -->
+                            <Border Width="50" Height="50" CornerRadius="8" Background="#1AFFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1">
+                                <Border.Clip>
+                                    <RectangleGeometry RadiusX="8" RadiusY="8" Rect="0,0,50,50" />
+                                </Border.Clip>
+                                <Grid>
+                                    <Image x:Name="ImgAlbumArt" Stretch="UniformToFill" />
+                                    <TextBlock x:Name="TxtAlbumPlaceholder" Text="♫" FontSize="20" Foreground="#44FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Middle: Track Title & Artist -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+                            <TextBlock x:Name="TxtSongTitle"
+                                       Text="Histórias dos Hinos, Live 1"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="TxtArtistName"
+                                       Text="Ricardo Martins"
+                                       FontSize="11"
+                                       Foreground="#99A0B0"
+                                       Margin="0,2,0,0"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+
+                        <!-- Right: Next Arrow '>' -->
+                        <Button x:Name="BtnArrowNext" Grid.Column="2" Click="BtnNextTrack_Click" Width="22" Height="22" Background="#26FFFFFF" BorderThickness="0" Cursor="Hand" VerticalAlignment="Center">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border Background="{TemplateBinding Background}" CornerRadius="11">
@@ -166,114 +259,263 @@
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
-                            <TextBlock Text="‹" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,-3,0,0" />
+                            <TextBlock Text="›" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,-3,0,0" />
                         </Button>
-
-                        <!-- Album Art (56x56 rounded corners) -->
-                        <Border Width="52" Height="52" CornerRadius="8" Background="#1AFFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1">
-                            <Border.Clip>
-                                <RectangleGeometry RadiusX="8" RadiusY="8" Rect="0,0,52,52" />
-                            </Border.Clip>
-                            <Grid>
-                                <Image x:Name="ImgAlbumArt" Stretch="UniformToFill" />
-                                <TextBlock x:Name="TxtAlbumPlaceholder" Text="♫" FontSize="22" Foreground="#44FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Grid>
-                        </Border>
-                    </StackPanel>
-
-                    <!-- Middle: Track Title & Artist -->
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                        <TextBlock x:Name="TxtSongTitle"
-                                   Text="Histórias dos Hinos, Live 1"
-                                   FontSize="13"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   TextTrimming="CharacterEllipsis" />
-                        <TextBlock x:Name="TxtArtistName"
-                                   Text="Ricardo Martins"
-                                   FontSize="11"
-                                   Foreground="#99A0B0"
-                                   Margin="0,2,0,0"
-                                   TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-
-                    <!-- Right: Next Arrow '>' -->
-                    <Button x:Name="BtnArrowNext" Grid.Column="2" Click="BtnNextTrack_Click" Width="22" Height="22" Background="#26FFFFFF" BorderThickness="0" Cursor="Hand" VerticalAlignment="Center">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="11">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <TextBlock Text="›" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,-3,0,0" />
-                    </Button>
-                </Grid>
-
-                <!-- ROW 2: TIMELINE PROGRESS (00:15  [======]  -00:00) -->
-                <Grid Grid.Row="2" Margin="0,0,0,6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock x:Name="TxtTimeElapsed" Text="00:15" FontSize="11" Foreground="#A0A5B5" VerticalAlignment="Center" Margin="0,0,8,0" />
-
-                    <!-- Custom Clean Progress Bar -->
-                    <Grid Grid.Column="1" Height="3" VerticalAlignment="Center" Margin="0,0,8,0">
-                        <!-- Track Background -->
-                        <Border Background="#33FFFFFF" CornerRadius="1.5" />
-                        <!-- Filled Bar -->
-                        <Border x:Name="BarMediaProgress" Background="White" CornerRadius="1.5" HorizontalAlignment="Left" Width="40" />
                     </Grid>
 
-                    <TextBlock x:Name="TxtTimeRemaining" Grid.Column="2" Text="-00:00" FontSize="11" Foreground="#A0A5B5" VerticalAlignment="Center" />
+                    <!-- ROW 2: TIMELINE PROGRESS (00:15  [======]  -00:00) -->
+                    <Grid Grid.Row="2" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="TxtTimeElapsed" Text="00:15" FontSize="11" Foreground="#A0A5B5" VerticalAlignment="Center" Margin="0,0,8,0" />
+
+                        <!-- Custom Clean Progress Bar -->
+                        <Grid Grid.Column="1" Height="3" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <!-- Track Background -->
+                            <Border Background="#33FFFFFF" CornerRadius="1.5" />
+                            <!-- Filled Bar -->
+                            <Border x:Name="BarMediaProgress" Background="White" CornerRadius="1.5" HorizontalAlignment="Left" Width="40" />
+                        </Grid>
+
+                        <TextBlock x:Name="TxtTimeRemaining" Grid.Column="2" Text="-00:00" FontSize="11" Foreground="#A0A5B5" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- ROW 3: BOTTOM CONTROLS (💬  [ ◀◀  ▶  ▶▶ ]  — • • •) -->
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Lyrics / Chat Bubble Icon -->
+                        <Button x:Name="BtnLyrics" ToolTip="Letras da Música" Background="Transparent" BorderThickness="0" Cursor="Hand" VerticalAlignment="Center">
+                            <TextBlock Text="💬" FontSize="13" Foreground="#99FFFFFF" />
+                        </Button>
+
+                        <!-- Center: Playback Controls (Previous, Play/Pause, Next) -->
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- Prev ◀◀ -->
+                                <Button Click="BtnPrevTrack_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="8,0" Padding="4">
+                                    <TextBlock Text="◀◀" FontSize="12" Foreground="White" />
+                                </Button>
+
+                                <!-- Play/Pause ▶ / ⏸ -->
+                                <Button x:Name="BtnPlayPause" Click="BtnQuickPlayPause_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="8,0" Padding="4">
+                                    <TextBlock x:Name="TxtPlayPauseIcon" Text="▶" FontSize="15" FontWeight="Bold" Foreground="White" />
+                                </Button>
+
+                                <!-- Next ▶▶ -->
+                                <Button Click="BtnNextTrack_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="8,0" Padding="4">
+                                    <TextBlock Text="▶▶" FontSize="12" Foreground="White" />
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Pagination Dots Indicator below controls (— • • • from Image 2) -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
+                                <Border Width="12" Height="3" CornerRadius="1.5" Background="White" Margin="0,0,3,0" />
+                                <Border Width="3" Height="3" CornerRadius="1.5" Background="#55FFFFFF" Margin="0,0,3,0" />
+                                <Border Width="3" Height="3" CornerRadius="1.5" Background="#55FFFFFF" Margin="0,0,3,0" />
+                                <Border Width="3" Height="3" CornerRadius="1.5" Background="#55FFFFFF" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Right placeholder to keep controls centered -->
+                        <Border Grid.Column="2" Width="18" />
+                    </Grid>
                 </Grid>
 
-                <!-- ROW 3: BOTTOM CONTROLS (💬  [ ◀◀  ▶  ▶▶ ]  — • • •) -->
-                <Grid Grid.Row="3">
+                <!-- 2B. MODE WITHOUT MUSIC (AGENDA & COMPREHENSIVE TELEMETRY DASHBOARD) -->
+                <Grid x:Name="GridAgendaTelemetryView" Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="220" /> <!-- Left: Agenda / Mini Calendário -->
+                        <ColumnDefinition Width="1" />   <!-- Divider -->
+                        <ColumnDefinition Width="*" />   <!-- Right: 4 Telemetry Cards (CPU, RAM, Disco, Rede) -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left: Lyrics / Chat Bubble Icon -->
-                    <Button x:Name="BtnLyrics" ToolTip="Letras da Música" Background="Transparent" BorderThickness="0" Cursor="Hand" VerticalAlignment="Center">
-                        <TextBlock Text="💬" FontSize="13" Foreground="#99FFFFFF" />
-                    </Button>
+                    <!-- LEFT: AGENDA / MINIMAL CALENDAR -->
+                    <Grid Grid.Column="0" Margin="0,2,14,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                    <!-- Center: Playback Controls (Previous, Play/Pause, Next) -->
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <!-- Prev ◀◀ -->
-                            <Button Click="BtnPrevTrack_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="8,0" Padding="4">
-                                <TextBlock Text="◀◀" FontSize="12" Foreground="White" />
-                            </Button>
-
-                            <!-- Play/Pause ▶ / ⏸ -->
-                            <Button x:Name="BtnPlayPause" Click="BtnQuickPlayPause_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="8,0" Padding="4">
-                                <TextBlock x:Name="TxtPlayPauseIcon" Text="▶" FontSize="15" FontWeight="Bold" Foreground="White" />
-                            </Button>
-
-                            <!-- Next ▶▶ -->
-                            <Button Click="BtnNextTrack_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="8,0" Padding="4">
-                                <TextBlock Text="▶▶" FontSize="12" Foreground="White" />
-                            </Button>
+                        <!-- Today Header -->
+                        <StackPanel Grid.Row="0">
+                            <TextBlock x:Name="TxtAgendaHeader" Text="📅 Hoje, 23 de Outubro" FontSize="12" FontWeight="Bold" Foreground="White" />
+                            <TextBlock x:Name="TxtAgendaSub" Text="Sexta-feira • Semana 43" FontSize="10" Foreground="#8892B0" Margin="0,1,0,6" />
                         </StackPanel>
 
-                        <!-- Pagination Dots Indicator below controls (— • • • from Image 2) -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
-                            <Border Width="12" Height="3" CornerRadius="1.5" Background="White" Margin="0,0,3,0" />
-                            <Border Width="3" Height="3" CornerRadius="1.5" Background="#55FFFFFF" Margin="0,0,3,0" />
-                            <Border Width="3" Height="3" CornerRadius="1.5" Background="#55FFFFFF" Margin="0,0,3,0" />
-                            <Border Width="3" Height="3" CornerRadius="1.5" Background="#55FFFFFF" />
-                        </StackPanel>
-                    </StackPanel>
+                        <!-- 7-Day Mini Calendar Strip (Mon - Sun) -->
+                        <ItemsControl x:Name="ItemsCalendar" Grid.Row="1" Margin="0,0,0,8">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="26" Height="34" CornerRadius="6" Margin="1,0" HorizontalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                        <Setter Property="Background" Value="#00D2FF" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding DayName}" FontSize="8" FontWeight="SemiBold" HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#778099" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                                <Setter Property="Foreground" Value="Black" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding DayNumber}" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,1,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="White" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                                <Setter Property="Foreground" Value="Black" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                    <!-- Right placeholder to keep controls centered -->
-                    <Border Grid.Column="2" Width="18" />
+                        <!-- Quick Tasks / Status Tag -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="#1A10B981" BorderBrush="#3310B981" BorderThickness="1" CornerRadius="9" Padding="6,2" Margin="0,0,6,0">
+                                <TextBlock Text="💧 Hidratação" FontSize="9" Foreground="#34D399" />
+                            </Border>
+                            <Border Background="#1A00D2FF" BorderBrush="#3300D2FF" BorderThickness="1" CornerRadius="9" Padding="6,2">
+                                <TextBlock Text="🎯 Foco Ativo" FontSize="9" Foreground="#38BDF8" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- VERTICAL GLASS DIVIDER -->
+                    <Rectangle Grid.Column="1" Width="1" Fill="#1EFFFFFF" Margin="0,2,0,2" />
+
+                    <!-- RIGHT: 4 TELEMETRY CARDS (CPU, RAM, DISCO, REDE - ALL CLICKABLE) -->
+                    <Grid Grid.Column="2" Margin="14,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 1. CPU CARD -->
+                        <Button Grid.Row="0" Grid.Column="0" Click="BtnCpu_Click" ToolTip="Clique para telemetria detalhada de CPU" Background="#12FFFFFF" BorderBrush="#1EFFFFFF" BorderThickness="1" Margin="2" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="6,4">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:CircularGauge x:Name="GaugeCpuDash" Grid.Column="0" Width="24" Height="24" StrokeThickness="2.8" StrokeBrush="#00D2FF" TrackBrush="#2600D2FF" Value="15" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtCpuDash" Text="15%" FontSize="12" FontWeight="Bold" Foreground="#00D2FF" />
+                                    <TextBlock Text="Processador" FontSize="9" Foreground="#8892B0" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+
+                        <!-- 2. RAM CARD -->
+                        <Button Grid.Row="0" Grid.Column="1" Click="BtnRam_Click" ToolTip="Clique para telemetria detalhada de Memória" Background="#12FFFFFF" BorderBrush="#1EFFFFFF" BorderThickness="1" Margin="2" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="6,4">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:CircularGauge x:Name="GaugeRamDash" Grid.Column="0" Width="24" Height="24" StrokeThickness="2.8" StrokeBrush="#A855F7" TrackBrush="#26A855F7" Value="48" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtRamDash" Text="48%" FontSize="12" FontWeight="Bold" Foreground="#A855F7" />
+                                    <TextBlock Text="Memória RAM" FontSize="9" Foreground="#8892B0" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+
+                        <!-- 3. DISK CARD -->
+                        <Button Grid.Row="1" Grid.Column="0" Click="BtnDisk_Click" ToolTip="Clique para telemetria detalhada de Disco" Background="#12FFFFFF" BorderBrush="#1EFFFFFF" BorderThickness="1" Margin="2" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="6,4">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:CircularGauge x:Name="GaugeDiskDash" Grid.Column="0" Width="24" Height="24" StrokeThickness="2.8" StrokeBrush="#F59E0B" TrackBrush="#26F59E0B" Value="20" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtDiskDash" Text="0B/s" FontSize="11" FontWeight="Bold" Foreground="#F59E0B" />
+                                    <TextBlock Text="Disco I/O" FontSize="9" Foreground="#8892B0" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+
+                        <!-- 4. NETWORK CARD -->
+                        <Button Grid.Row="1" Grid.Column="1" Click="BtnNet_Click" ToolTip="Clique para telemetria detalhada de Rede" Background="#12FFFFFF" BorderBrush="#1EFFFFFF" BorderThickness="1" Margin="2" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="6,4">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:CircularGauge x:Name="GaugeNetDash" Grid.Column="0" Width="24" Height="24" StrokeThickness="2.8" StrokeBrush="#10B981" TrackBrush="#2610B981" Value="35" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtNetDash" Text="0B/s" FontSize="11" FontWeight="Bold" Foreground="#10B981" />
+                                    <TextBlock Text="Rede Tráfego" FontSize="9" Foreground="#8892B0" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </Grid>
                 </Grid>
             </Grid>
         </Grid>

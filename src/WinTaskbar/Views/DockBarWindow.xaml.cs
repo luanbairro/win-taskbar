@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
@@ -10,6 +11,13 @@ using WinTaskbar.Services;
 
 namespace WinTaskbar.Views
 {
+    public class CalendarDayItem
+    {
+        public string DayName { get; set; } = string.Empty;
+        public int DayNumber { get; set; }
+        public bool IsToday { get; set; }
+    }
+
     public partial class DockBarWindow : Window
     {
         private readonly ICpuService _cpuService;
@@ -19,6 +27,11 @@ namespace WinTaskbar.Views
         private readonly IWindowService _windowService;
         private readonly IAppLauncherService _launcherService;
         private readonly IMediaService _mediaService;
+
+        private readonly CpuFlyout _cpuFlyout;
+        private readonly MemoryFlyout _memoryFlyout;
+        private readonly DiskFlyout _diskFlyout;
+        private readonly NetworkFlyout _networkFlyout;
 
         private readonly DispatcherTimer _timer;
         private bool _isExpanded;
@@ -41,6 +54,11 @@ namespace WinTaskbar.Views
             _windowService = windowService;
             _launcherService = launcherService;
             _mediaService = mediaService;
+
+            _cpuFlyout = new CpuFlyout(_cpuService);
+            _memoryFlyout = new MemoryFlyout(_memoryService);
+            _diskFlyout = new DiskFlyout(_diskService);
+            _networkFlyout = new NetworkFlyout(_networkService);
 
             _timer = new DispatcherTimer
             {
@@ -71,6 +89,7 @@ namespace WinTaskbar.Views
             TaskbarHelper.ReserveWorkArea(topMarginPixels: 34, bottomMarginPixels: 0);
 
             _timer.Start();
+            PopulateCalendar();
             UpdateQuickStats();
             UpdateNotchGeometry(NotchRoot.ActualWidth > 0 ? NotchRoot.ActualWidth : 320, NotchRoot.ActualHeight > 0 ? NotchRoot.ActualHeight : 32);
         }
@@ -78,7 +97,7 @@ namespace WinTaskbar.Views
         public void RepositionOnScreen()
         {
             double screenW = SystemParameters.PrimaryScreenWidth;
-            double windowWidth = Width > 0 ? Width : 560;
+            double windowWidth = Width > 0 ? Width : 600;
 
             Left = Math.Max(0, Math.Round((screenW - windowWidth) / 2.0));
             Top = 0;
@@ -95,6 +114,12 @@ namespace WinTaskbar.Views
             _ = _mediaService.UpdateAsync();
 
             UpdateQuickStats();
+
+            // Refresh open flyout
+            if (_cpuFlyout.IsVisible) _cpuFlyout.UpdateView();
+            if (_memoryFlyout.IsVisible) _memoryFlyout.UpdateView();
+            if (_diskFlyout.IsVisible) _diskFlyout.UpdateView();
+            if (_networkFlyout.IsVisible) _networkFlyout.UpdateView();
         }
 
         private double GetBatteryPercent()
@@ -112,11 +137,47 @@ namespace WinTaskbar.Views
             return 100.0;
         }
 
+        private void PopulateCalendar()
+        {
+            try
+            {
+                DateTime today = DateTime.Today;
+                int dayOfWeek = (int)today.DayOfWeek;
+                int deltaToMonday = dayOfWeek == 0 ? -6 : 1 - dayOfWeek;
+                DateTime monday = today.AddDays(deltaToMonday);
+
+                string[] shortDays = { "SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM" };
+                var list = new List<CalendarDayItem>();
+
+                for (int i = 0; i < 7; i++)
+                {
+                    DateTime d = monday.AddDays(i);
+                    list.Add(new CalendarDayItem
+                    {
+                        DayName = shortDays[i],
+                        DayNumber = d.Day,
+                        IsToday = (d.Date == today.Date)
+                    });
+                }
+
+                ItemsCalendar.ItemsSource = list;
+
+                var ptCulture = new CultureInfo("pt-BR");
+                string dayOfWeekName = ptCulture.DateTimeFormat.GetDayName(today.DayOfWeek);
+                string monthName = ptCulture.DateTimeFormat.GetMonthName(today.Month);
+                TxtAgendaHeader.Text = $"📅 Hoje, {today.Day} de {char.ToUpper(monthName[0]) + monthName.Substring(1)}";
+                TxtAgendaSub.Text = $"{char.ToUpper(dayOfWeekName[0]) + dayOfWeekName.Substring(1)} • {DateTime.Now:HH:mm}";
+            }
+            catch { }
+        }
+
         private void UpdateQuickStats()
         {
             double battery = GetBatteryPercent();
             double cpu = _cpuService.TotalUsage;
             double ram = _memoryService.UsagePercentage;
+            double maxDiskSpeed = Math.Max(_diskService.GlobalReadBytesPerSec, _diskService.GlobalWriteBytesPerSec);
+            double maxNetSpeed = Math.Max(_networkService.GlobalDownloadBytesPerSec, _networkService.GlobalUploadBytesPerSec);
             var track = _mediaService.CurrentTrack;
 
             // 1. Collapsed Mode Updates (Image 1)
@@ -131,18 +192,26 @@ namespace WinTaskbar.Views
 
             BorderSpotifyMini.Visibility = track.HasMedia && track.IsPlaying ? Visibility.Visible : Visibility.Collapsed;
 
-            // 2. Expanded Mode Updates (Image 2)
-            GaugeBatteryExpanded.Value = battery;
-            TxtDateTimeExpanded.Text = DateTime.Now.ToString("ddd d MMM yyyy HH:mm", CultureInfo.InvariantCulture);
-
-            GaugeCpuExpanded.Value = cpu;
-            TxtCpuExpanded.Text = $"{cpu:F0}%";
-
-            GaugeRamExpanded.Value = ram;
-            TxtRamExpanded.Text = $"{ram:F0}%";
-
+            // 2. Expanded Mode Switching
             if (track.HasMedia)
             {
+                // Show Media Card (Image 2 style)
+                GridMediaView.Visibility = Visibility.Visible;
+                GridAgendaTelemetryView.Visibility = Visibility.Collapsed;
+
+                GaugeBatteryExpanded.Value = battery;
+                TxtDateTimeExpanded.Text = DateTime.Now.ToString("ddd d MMM yyyy HH:mm", CultureInfo.InvariantCulture);
+
+                // Telemetry Pills in Media Header (Clickable)
+                GaugeCpuMedia.Value = cpu;
+                TxtCpuMedia.Text = $"{cpu:F0}%";
+
+                GaugeRamMedia.Value = ram;
+                TxtRamMedia.Text = $"{ram:F0}%";
+
+                TxtDiskMedia.Text = FormatCompactSpeed(maxDiskSpeed);
+                TxtNetMedia.Text = FormatCompactSpeed(maxNetSpeed);
+
                 TxtSongTitle.Text = !string.IsNullOrWhiteSpace(track.Title) ? track.Title : "Histórias dos Hinos, Live 1";
                 TxtArtistName.Text = !string.IsNullOrWhiteSpace(track.Artist) ? track.Artist : "Ricardo Martins";
                 TxtPlayPauseIcon.Text = track.IsPlaying ? "⏸" : "▶";
@@ -161,21 +230,44 @@ namespace WinTaskbar.Views
                 TxtTimeElapsed.Text = track.PositionFormatted;
                 TxtTimeRemaining.Text = track.RemainingFormatted;
 
-                // Update progress bar width
                 double totalBarWidth = 280.0;
                 BarMediaProgress.Width = Math.Max(2.0, (totalBarWidth * (track.ProgressPercentage / 100.0)));
             }
             else
             {
-                TxtSongTitle.Text = "Nenhuma música tocando";
-                TxtArtistName.Text = "Spotify";
-                TxtPlayPauseIcon.Text = "▶";
-                ImgAlbumArt.Source = null;
-                TxtAlbumPlaceholder.Visibility = Visibility.Visible;
-                TxtTimeElapsed.Text = "00:00";
-                TxtTimeRemaining.Text = "-00:00";
-                BarMediaProgress.Width = 0;
+                // Show Agenda + 4 Large Telemetry Cards
+                GridMediaView.Visibility = Visibility.Collapsed;
+                GridAgendaTelemetryView.Visibility = Visibility.Visible;
+
+                // Telemetry Dashboard
+                GaugeCpuDash.Value = cpu;
+                TxtCpuDash.Text = $"{cpu:F0}%";
+
+                GaugeRamDash.Value = ram;
+                TxtRamDash.Text = $"{ram:F0}%";
+
+                TxtDiskDash.Text = FormatCompactSpeed(maxDiskSpeed);
+                GaugeDiskDash.Value = Math.Clamp((maxDiskSpeed / (1024.0 * 1024.0 * 20.0)) * 100.0, 5, 100);
+
+                TxtNetDash.Text = FormatCompactSpeed(maxNetSpeed);
+                GaugeNetDash.Value = Math.Clamp((maxNetSpeed / (1024.0 * 1024.0 * 10.0)) * 100.0, 5, 100);
+
+                var ptCulture = new CultureInfo("pt-BR");
+                DateTime today = DateTime.Today;
+                string dayOfWeekName = ptCulture.DateTimeFormat.GetDayName(today.DayOfWeek);
+                string monthName = ptCulture.DateTimeFormat.GetMonthName(today.Month);
+                TxtAgendaHeader.Text = $"📅 Hoje, {today.Day} de {char.ToUpper(monthName[0]) + monthName.Substring(1)}";
+                TxtAgendaSub.Text = $"{char.ToUpper(dayOfWeekName[0]) + dayOfWeekName.Substring(1)} • {DateTime.Now:HH:mm}";
             }
+        }
+
+        private static string FormatCompactSpeed(double bytes)
+        {
+            if (bytes >= 1024 * 1024)
+                return $"{bytes / (1024 * 1024):F1}M/s";
+            if (bytes >= 1024)
+                return $"{bytes / 1024:F0}K/s";
+            return $"{bytes:F0}B/s";
         }
 
         // ================= NOTCH GEOMETRY (Concave Ears + Rounded Bottom) =================
@@ -262,11 +354,15 @@ namespace WinTaskbar.Views
             if (_isExpanded) return;
             _isExpanded = true;
 
-            var widthAnim = new DoubleAnimation(500, TimeSpan.FromMilliseconds(220))
+            bool hasMedia = _mediaService.CurrentTrack.HasMedia;
+            double targetWidth = hasMedia ? 520 : 550;
+            double targetHeight = hasMedia ? 146 : 148;
+
+            var widthAnim = new DoubleAnimation(targetWidth, TimeSpan.FromMilliseconds(220))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
-            var heightAnim = new DoubleAnimation(144, TimeSpan.FromMilliseconds(220))
+            var heightAnim = new DoubleAnimation(targetHeight, TimeSpan.FromMilliseconds(220))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
@@ -286,6 +382,8 @@ namespace WinTaskbar.Views
             if (!_isExpanded) return;
             _isExpanded = false;
 
+            CloseOtherFlyouts();
+
             var widthAnim = new DoubleAnimation(320, TimeSpan.FromMilliseconds(200))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
@@ -304,6 +402,72 @@ namespace WinTaskbar.Views
             var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(160));
             GridCollapsed.BeginAnimation(OpacityProperty, fadeIn);
         }
+
+        // ================= DETAILED TELEMETRY FLYOUT DISPATCHERS =================
+
+        private void BtnCpu_Click(object sender, RoutedEventArgs e)
+        {
+            _cpuFlyout.UpdateView();
+            PositionAndShowFlyout(_cpuFlyout, (FrameworkElement)sender);
+        }
+
+        private void BtnRam_Click(object sender, RoutedEventArgs e)
+        {
+            _memoryFlyout.UpdateView();
+            PositionAndShowFlyout(_memoryFlyout, (FrameworkElement)sender);
+        }
+
+        private void BtnDisk_Click(object sender, RoutedEventArgs e)
+        {
+            _diskFlyout.UpdateView();
+            PositionAndShowFlyout(_diskFlyout, (FrameworkElement)sender);
+        }
+
+        private void BtnNet_Click(object sender, RoutedEventArgs e)
+        {
+            _networkFlyout.UpdateView();
+            PositionAndShowFlyout(_networkFlyout, (FrameworkElement)sender);
+        }
+
+        private void PositionAndShowFlyout(Window flyout, FrameworkElement sourceButton)
+        {
+            if (flyout.IsVisible)
+            {
+                flyout.Hide();
+                return;
+            }
+
+            CloseOtherFlyouts();
+
+            Point btnScreenPos = sourceButton.PointToScreen(new Point(0, 0));
+            double flyoutX = btnScreenPos.X + (sourceButton.ActualWidth / 2) - (flyout.Width / 2);
+            double flyoutY = NotchRoot.ActualHeight + 6;
+
+            double screenW = SystemParameters.PrimaryScreenWidth;
+            if (flyoutX + flyout.Width > screenW)
+            {
+                flyoutX = screenW - flyout.Width - 10;
+            }
+            if (flyoutX < 10)
+            {
+                flyoutX = 10;
+            }
+
+            flyout.Left = flyoutX;
+            flyout.Top = flyoutY;
+            flyout.Show();
+            flyout.Activate();
+        }
+
+        private void CloseOtherFlyouts()
+        {
+            _cpuFlyout.Hide();
+            _memoryFlyout.Hide();
+            _diskFlyout.Hide();
+            _networkFlyout.Hide();
+        }
+
+        // ================= MEDIA PLAYBACK HANDLERS =================
 
         private async void BtnQuickPlayPause_Click(object sender, RoutedEventArgs e)
         {
@@ -343,6 +507,10 @@ namespace WinTaskbar.Views
         {
             _timer.Stop();
             TaskbarHelper.RestoreWorkArea();
+            _cpuFlyout.Close();
+            _memoryFlyout.Close();
+            _diskFlyout.Close();
+            _networkFlyout.Close();
             base.OnClosed(e);
         }
     }
