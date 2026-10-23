@@ -83,8 +83,8 @@ namespace WinTaskbar.Views
 
             RepositionOnScreen();
 
-            // Reserve bottom work area so maximized windows (WhatsApp, Chrome, etc.) stop above dock
-            TaskbarHelper.ReserveWorkArea(64);
+            // Reserve top work area so maximized windows (WhatsApp, Chrome, etc.) stop below notch
+            TaskbarHelper.ReserveWorkArea(topMarginPixels: 64, bottomMarginPixels: 0);
 
             _timer.Start();
             UpdateQuickStats();
@@ -100,7 +100,7 @@ namespace WinTaskbar.Views
             double dockHeight = ActualHeight > 0 ? ActualHeight : 76;
 
             double targetLeft = Math.Max(10, Math.Round((screenW - dockWidth) / 2.0));
-            double targetTop = Math.Round(screenH - dockHeight - 2);
+            double targetTop = 0.0; // Anchored to the top bezel (Notch / Dynamic Island)
 
             if (Math.Abs(Left - targetLeft) > 1.0)
             {
@@ -317,7 +317,7 @@ namespace WinTaskbar.Views
 
             Point btnScreenPos = BtnStartMenu.PointToScreen(new Point(0, 0));
             _startMenuFlyout.Left = Math.Max(12, btnScreenPos.X - 10);
-            _startMenuFlyout.Top = Math.Max(10, Top - _startMenuFlyout.Height - 12);
+            _startMenuFlyout.Top = Math.Max(10, Top + ActualHeight);
 
             _startMenuFlyout.Show();
             _startMenuFlyout.Activate();
@@ -411,7 +411,7 @@ namespace WinTaskbar.Views
 
             Point btnScreenPos = sourceButton.PointToScreen(new Point(0, 0));
             double flyoutX = btnScreenPos.X + (sourceButton.ActualWidth / 2) - (flyout.Width / 2);
-            double flyoutY = Top - flyout.Height - 10;
+            double flyoutY = Top + ActualHeight;
 
             double screenW = SystemParameters.PrimaryScreenWidth;
             if (flyoutX + flyout.Width > screenW)
@@ -466,7 +466,7 @@ namespace WinTaskbar.Views
         public void SetReserveWorkArea(bool enable)
         {
             if (enable)
-                TaskbarHelper.ReserveWorkArea(64);
+                TaskbarHelper.ReserveWorkArea(topMarginPixels: 64, bottomMarginPixels: 0);
             else
                 TaskbarHelper.RestoreWorkArea();
         }

@@ -148,7 +148,7 @@ namespace WinTaskbar.Native
                 NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_SHOWWINDOW);
         }
 
-        public static void ReserveWorkArea(int bottomMarginPixels)
+        public static void ReserveWorkArea(int topMarginPixels = 64, int bottomMarginPixels = 0)
         {
             try
             {
@@ -167,7 +167,7 @@ namespace WinTaskbar.Native
                 var newWorkArea = new NativeMethods.RECT
                 {
                     Left = 0,
-                    Top = 0,
+                    Top = topMarginPixels,
                     Right = screenWidth,
                     Bottom = Math.Max(100, screenHeight - bottomMarginPixels)
                 };

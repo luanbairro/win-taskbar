@@ -15,8 +15,8 @@
         <ResourceDictionary Source="/Styles/FluentTheme.xaml" />
     </Window.Resources>
 
-    <!-- Liquid Glass Dock Container with Balanced Smoky Glass Transparency -->
-    <Grid VerticalAlignment="Bottom" Height="56" Margin="6,0,6,6">
+    <!-- Liquid Glass Dock / Notch Container with Balanced Smoky Glass Transparency -->
+    <Grid VerticalAlignment="Top" Height="56" Margin="6,4,6,6">
         <!-- Main Smoky Liquid Glass Pill Border -->
         <Border CornerRadius="28"
                 BorderThickness="1"
@@ -146,7 +146,7 @@
                                             Margin="1,0"
                                             Click="BtnDockApp_Click"
                                             MouseRightButtonUp="BtnDockApp_RightClick"
-                                            RenderTransformOrigin="0.5, 0.95">
+                                            RenderTransformOrigin="0.5, 0.05">
                                         <Button.RenderTransform>
                                             <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
                                         </Button.RenderTransform>
