@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using WinTaskbar.Models;
 using WinTaskbar.Native;
@@ -30,6 +30,8 @@ namespace WinTaskbar.Views
         private readonly MediaFlyout _mediaFlyout;
 
         private readonly DispatcherTimer _timer;
+        private bool _isExpanded;
+        private bool _isPinned;
 
         public DockBarWindow(
             ICpuService cpuService,
@@ -72,7 +74,7 @@ namespace WinTaskbar.Views
             var helper = new System.Windows.Interop.WindowInteropHelper(this);
             IntPtr hwnd = helper.EnsureHandle();
 
-            // Disable DWM window frame rounding on this transparent window to completely remove square outline
+            // Disable DWM window frame rounding on this transparent window
             int doNotRound = (int)NativeMethods.DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND;
             NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_WINDOW_CORNER_PREFERENCE, ref doNotRound, sizeof(int));
 
@@ -83,27 +85,20 @@ namespace WinTaskbar.Views
 
             RepositionOnScreen();
 
-            // Reserve top work area so maximized windows (WhatsApp, Chrome, etc.) stop below notch
-            TaskbarHelper.ReserveWorkArea(topMarginPixels: 64, bottomMarginPixels: 0);
+            // Reserve top work area for Notch (42px)
+            TaskbarHelper.ReserveWorkArea(topMarginPixels: 42, bottomMarginPixels: 0);
 
             _timer.Start();
             UpdateQuickStats();
-            RefreshDockApps();
         }
 
         public void RepositionOnScreen()
         {
             double screenW = SystemParameters.PrimaryScreenWidth;
-            double screenH = SystemParameters.PrimaryScreenHeight;
+            double windowWidth = Width > 0 ? Width : 580;
 
-            double dockWidth = ActualWidth > 0 ? ActualWidth : 760;
-            double dockHeight = ActualHeight > 0 ? ActualHeight : 76;
-
-            double targetLeft = Math.Max(10, Math.Round((screenW - dockWidth) / 2.0));
-            double targetTop = 0.0; // Anchored directly to the top edge (Notch / Dynamic Island)
-
-            Left = targetLeft;
-            Top = targetTop;
+            Left = Math.Max(0, Math.Round((screenW - windowWidth) / 2.0));
+            Top = 0;
         }
 
         private void OnTimerTick(object? sender, EventArgs e)
@@ -117,7 +112,6 @@ namespace WinTaskbar.Views
             _ = _mediaService.UpdateAsync();
 
             UpdateQuickStats();
-            RefreshDockApps();
 
             // Refresh open flyout
             if (_cpuFlyout.IsVisible) _cpuFlyout.UpdateView();
@@ -129,8 +123,53 @@ namespace WinTaskbar.Views
 
         private void UpdateQuickStats()
         {
+            var track = _mediaService.CurrentTrack;
+
+            // 1. Collapsed Pill Updates
+            if (track.HasMedia)
+            {
+                TxtCollapsedTitle.Text = track.DisplayTitle;
+                TxtMiniWaveform.Visibility = track.IsPlaying ? Visibility.Visible : Visibility.Collapsed;
+                TxtMiniPlayPauseIcon.Text = track.IsPlaying ? "⏸" : "▶";
+            }
+            else
+            {
+                TxtCollapsedTitle.Text = $"Spotify • {DateTime.Now:HH:mm}";
+                TxtMiniWaveform.Visibility = Visibility.Collapsed;
+                TxtMiniPlayPauseIcon.Text = "▶";
+            }
+
+            TxtCollapsedStats.Text = $"{_memoryService.UsagePercentage:F0}% RAM";
+
+            // 2. Expanded Card Updates
+            if (track.HasMedia)
+            {
+                TxtExpandedTrackTitle.Text = !string.IsNullOrWhiteSpace(track.Title) ? track.Title : "Tocando agora";
+                TxtExpandedArtist.Text = !string.IsNullOrWhiteSpace(track.Artist) ? track.Artist : "Spotify";
+                TxtExpandedPlayPauseIcon.Text = track.IsPlaying ? "⏸" : "▶";
+
+                if (track.Thumbnail != null)
+                {
+                    ImgExpandedAlbum.Source = track.Thumbnail;
+                    TxtAlbumPlaceholder.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    ImgExpandedAlbum.Source = null;
+                    TxtAlbumPlaceholder.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                TxtExpandedTrackTitle.Text = "Nenhuma música tocando";
+                TxtExpandedArtist.Text = "Spotify pausado ou fechado";
+                TxtExpandedPlayPauseIcon.Text = "▶";
+                ImgExpandedAlbum.Source = null;
+                TxtAlbumPlaceholder.Visibility = Visibility.Visible;
+            }
+
+            // Expanded Hardware Stats
             TxtCpuQuick.Text = $"{_cpuService.TotalUsage:F0}%";
-            BarRamQuick.Value = _memoryService.UsagePercentage;
             TxtRamQuick.Text = $"{_memoryService.UsagePercentage:F0}%";
 
             double maxDiskSpeed = Math.Max(_diskService.GlobalReadBytesPerSec, _diskService.GlobalWriteBytesPerSec);
@@ -138,136 +177,97 @@ namespace WinTaskbar.Views
 
             double maxNetSpeed = Math.Max(_networkService.GlobalDownloadBytesPerSec, _networkService.GlobalUploadBytesPerSec);
             TxtNetQuick.Text = FormatCompactSpeed(maxNetSpeed);
+        }
 
-            TxtClock.Text = DateTime.Now.ToString("HH:mm");
+        // ================= DYNAMIC ISLAND EXPAND / COLLAPSE ANIMATIONS =================
 
-            // Update Media Pill
-            var track = _mediaService.CurrentTrack;
-            if (track.HasMedia)
+        private void PillBorder_MouseEnter(object sender, MouseEventArgs e)
+        {
+            ExpandNotch();
+        }
+
+        private void PillBorder_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (!_isPinned)
             {
-                TxtMediaStatus.Text = track.DisplayTitle;
-                TxtQuickPlayPauseIcon.Text = track.IsPlaying ? "⏸" : "▶";
-            }
-            else
-            {
-                TxtMediaStatus.Text = "Spotify";
-                TxtQuickPlayPauseIcon.Text = "▶";
+                CollapseNotch();
             }
         }
 
-        private void RefreshDockApps()
+        private void ExpandNotch()
         {
-            try
+            if (_isExpanded) return;
+            _isExpanded = true;
+
+            var widthAnim = new DoubleAnimation(540, TimeSpan.FromMilliseconds(220))
             {
-                var pinned = _launcherService.GetPinnedApps();
-                var openApps = _windowService.GetOpenWindows();
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            var heightAnim = new DoubleAnimation(148, TimeSpan.FromMilliseconds(220))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
 
-                var displayList = new List<DockAppItem>();
-                var matchedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            PillBorder.BeginAnimation(WidthProperty, widthAnim);
+            PillBorder.BeginAnimation(HeightProperty, heightAnim);
 
-                // Add all pinned apps with their current running state
-                foreach (var p in pinned)
-                {
-                    string pExeName = Path.GetFileNameWithoutExtension(p.ExecutablePath);
+            GridCollapsed.Visibility = Visibility.Collapsed;
+            GridExpanded.Visibility = Visibility.Visible;
 
-                    var matchingApp = openApps.FirstOrDefault(w =>
-                        (!string.IsNullOrEmpty(p.ExecutablePath) && string.Equals(w.ExecutablePath, p.ExecutablePath, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(pExeName) && string.Equals(w.Name, pExeName, StringComparison.OrdinalIgnoreCase)));
-
-                    if (matchingApp != null)
-                    {
-                        p.IsRunning = true;
-                        p.IsActive = matchingApp.IsActive;
-                        p.Hwnd = matchingApp.Hwnd;
-                        p.OpenHwnds.Clear();
-                        p.OpenHwnds.AddRange(matchingApp.OpenHwnds);
-                        p.BadgeCount = matchingApp.BadgeCount;
-                        p.Title = matchingApp.Title;
-                        p.ShowSeparatorBefore = false;
-
-                        string key = !string.IsNullOrEmpty(matchingApp.ExecutablePath) ? matchingApp.ExecutablePath : matchingApp.Name;
-                        matchedKeys.Add(key);
-                    }
-                    else
-                    {
-                        p.IsRunning = false;
-                        p.IsActive = false;
-                        p.Hwnd = IntPtr.Zero;
-                        p.OpenHwnds.Clear();
-                        p.BadgeCount = 0;
-                        p.ShowSeparatorBefore = false;
-                    }
-
-                    displayList.Add(p);
-                }
-
-                // Add other open apps that aren't pinned
-                bool isFirstUnpinned = true;
-                foreach (var w in openApps)
-                {
-                    string key = !string.IsNullOrEmpty(w.ExecutablePath) ? w.ExecutablePath : w.Name;
-                    if (!matchedKeys.Contains(key))
-                    {
-                        w.IsPinned = false;
-                        w.ShowSeparatorBefore = isFirstUnpinned && pinned.Count > 0;
-                        isFirstUnpinned = false;
-                        displayList.Add(w);
-                    }
-                }
-
-                // Preserve existing scale if mouse is hovering
-                if (ItemsDockApps.ItemsSource is IList<DockAppItem> existingList && existingList.Count == displayList.Count)
-                {
-                    for (int i = 0; i < displayList.Count; i++)
-                    {
-                        displayList[i].Scale = existingList[i].Scale;
-                    }
-                }
-
-                ItemsDockApps.ItemsSource = displayList;
-            }
-            catch { }
+            var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(180));
+            GridExpanded.BeginAnimation(OpacityProperty, fadeIn);
         }
 
-        private void ItemsDockApps_MouseMove(object sender, MouseEventArgs e)
+        private void CollapseNotch()
         {
-            if (ItemsDockApps.ItemsSource is not IList<DockAppItem> items || items.Count == 0)
-                return;
+            if (!_isExpanded || _isPinned) return;
+            _isExpanded = false;
 
-            Point mousePos = e.GetPosition(ItemsDockApps);
-            double mouseX = mousePos.X;
-            const double waveRadius = 90.0;
-            const double maxScale = 1.38;
-
-            for (int i = 0; i < items.Count; i++)
+            var widthAnim = new DoubleAnimation(280, TimeSpan.FromMilliseconds(200))
             {
-                var container = ItemsDockApps.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
-                if (container == null) continue;
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            var heightAnim = new DoubleAnimation(38, TimeSpan.FromMilliseconds(200))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
 
-                Point itemCenter = container.TransformToAncestor(ItemsDockApps).Transform(new Point(container.ActualWidth / 2.0, 0));
-                double distance = Math.Abs(mouseX - itemCenter.X);
+            PillBorder.BeginAnimation(WidthProperty, widthAnim);
+            PillBorder.BeginAnimation(HeightProperty, heightAnim);
 
-                if (distance < waveRadius)
-                {
-                    double factor = Math.Cos((distance / waveRadius) * (Math.PI / 2.0));
-                    items[i].Scale = 1.0 + (maxScale - 1.0) * factor;
-                }
-                else
-                {
-                    items[i].Scale = 1.0;
-                }
+            GridExpanded.Visibility = Visibility.Collapsed;
+            GridCollapsed.Visibility = Visibility.Visible;
+
+            var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(160));
+            GridCollapsed.BeginAnimation(OpacityProperty, fadeIn);
+        }
+
+        private void BtnPinNotch_Click(object sender, RoutedEventArgs e)
+        {
+            _isPinned = !_isPinned;
+            TxtPinIcon.Foreground = _isPinned ? (Brush)FindResource("AccentCyanBrush") : new SolidColorBrush(Color.FromArgb(0x88, 0xFF, 0xFF, 0xFF));
+            if (_isPinned)
+            {
+                ExpandNotch();
             }
         }
 
-        private void ItemsDockApps_MouseLeave(object sender, MouseEventArgs e)
+        private async void BtnQuickPlayPause_Click(object sender, RoutedEventArgs e)
         {
-            if (ItemsDockApps.ItemsSource is not IList<DockAppItem> items)
-                return;
+            await _mediaService.TogglePlayPauseAsync();
+            e.Handled = true;
+        }
 
-            foreach (var item in items)
-            {
-                item.Scale = 1.0;
-            }
+        private async void BtnPrevTrack_Click(object sender, RoutedEventArgs e)
+        {
+            await _mediaService.PreviousAsync();
+            e.Handled = true;
+        }
+
+        private async void BtnNextTrack_Click(object sender, RoutedEventArgs e)
+        {
+            await _mediaService.NextAsync();
+            e.Handled = true;
         }
 
         private static string FormatCompactSpeed(double bytes)
@@ -281,7 +281,7 @@ namespace WinTaskbar.Views
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
+            if (e.ButtonState == MouseButtonState.Pressed && !_isExpanded)
             {
                 DragMove();
             }
@@ -306,12 +306,11 @@ namespace WinTaskbar.Views
             }
 
             CloseOtherFlyouts();
-
             _startMenuFlyout.RefreshContent();
 
             Point btnScreenPos = BtnStartMenu.PointToScreen(new Point(0, 0));
             _startMenuFlyout.Left = Math.Max(12, btnScreenPos.X - 10);
-            _startMenuFlyout.Top = Math.Max(10, Top + ActualHeight);
+            _startMenuFlyout.Top = 154; // Directly below expanded notch
 
             _startMenuFlyout.Show();
             _startMenuFlyout.Activate();
@@ -320,77 +319,6 @@ namespace WinTaskbar.Views
             {
                 _startMenuFlyout.FocusSearch();
             }
-        }
-
-        private void BtnDockApp_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is DockAppItem item)
-            {
-                if (item.IsRunning)
-                {
-                    _windowService.ToggleApp(item);
-                }
-                else if (!string.IsNullOrEmpty(item.ExecutablePath))
-                {
-                    _launcherService.Launch(item.ExecutablePath, item.Arguments);
-                }
-            }
-        }
-
-        private void BtnDockApp_RightClick(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is DockAppItem item)
-            {
-                var menu = new ContextMenu();
-
-                if (item.IsPinned)
-                {
-                    var itemUnpin = new MenuItem { Header = "📌 Desafixar da Dock" };
-                    itemUnpin.Click += (s, ev) =>
-                    {
-                        _launcherService.UnpinApp(item.ExecutablePath);
-                        RefreshDockApps();
-                    };
-                    menu.Items.Add(itemUnpin);
-                }
-                else
-                {
-                    var itemPin = new MenuItem { Header = "📌 Fixar na Dock" };
-                    itemPin.Click += (s, ev) =>
-                    {
-                        _launcherService.PinApp(item.Name, item.ExecutablePath);
-                        RefreshDockApps();
-                    };
-                    menu.Items.Add(itemPin);
-                }
-
-                if (item.IsRunning && item.Hwnd != IntPtr.Zero)
-                {
-                    menu.Items.Add(new Separator());
-                    var itemClose = new MenuItem { Header = "❌ Fechar Janela" };
-                    itemClose.Click += (s, ev) =>
-                    {
-                        _windowService.CloseWindow(item.Hwnd);
-                    };
-                    menu.Items.Add(itemClose);
-                }
-
-                menu.PlacementTarget = btn;
-                menu.IsOpen = true;
-                e.Handled = true;
-            }
-        }
-
-        private void BtnMedia_Click(object sender, RoutedEventArgs e)
-        {
-            _mediaFlyout.UpdateView();
-            PositionAndShowFlyout(_mediaFlyout, BtnMedia);
-        }
-
-        private async void BtnQuickPlayPause_Click(object sender, RoutedEventArgs e)
-        {
-            await _mediaService.TogglePlayPauseAsync();
-            e.Handled = true;
         }
 
         private void PositionAndShowFlyout(Window flyout, FrameworkElement sourceButton)
@@ -405,7 +333,7 @@ namespace WinTaskbar.Views
 
             Point btnScreenPos = sourceButton.PointToScreen(new Point(0, 0));
             double flyoutX = btnScreenPos.X + (sourceButton.ActualWidth / 2) - (flyout.Width / 2);
-            double flyoutY = Top + ActualHeight;
+            double flyoutY = 154; // Directly below expanded notch
 
             double screenW = SystemParameters.PrimaryScreenWidth;
             if (flyoutX + flyout.Width > screenW)
@@ -460,7 +388,7 @@ namespace WinTaskbar.Views
         public void SetReserveWorkArea(bool enable)
         {
             if (enable)
-                TaskbarHelper.ReserveWorkArea(topMarginPixels: 64, bottomMarginPixels: 0);
+                TaskbarHelper.ReserveWorkArea(topMarginPixels: 42, bottomMarginPixels: 0);
             else
                 TaskbarHelper.RestoreWorkArea();
         }
