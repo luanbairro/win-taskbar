@@ -6,18 +6,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using WinTaskbar.Models;
 using WinTaskbar.Native;
 using WinTaskbar.Services;
 
 namespace WinTaskbar.Views
 {
-    public class CalendarDayItem
-    {
-        public string DayName { get; set; } = string.Empty;
-        public int DayNumber { get; set; }
-        public bool IsToday { get; set; }
-    }
-
     public partial class DockBarWindow : Window
     {
         private readonly ICpuService _cpuService;
@@ -34,7 +28,10 @@ namespace WinTaskbar.Views
         private readonly NetworkFlyout _networkFlyout;
 
         private readonly DispatcherTimer _timer;
+        private readonly DispatcherTimer _hudTimer;
+
         private bool _isExpanded;
+        private int _activePageIndex = 0; // 0 = Spotify, 1 = Telemetry, 2 = Agenda
 
         public DockBarWindow(
             ICpuService cpuService,
@@ -66,6 +63,12 @@ namespace WinTaskbar.Views
             };
             _timer.Tick += OnTimerTick;
 
+            _hudTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1800)
+            };
+            _hudTimer.Tick += OnHudTimerTick;
+
             Loaded += OnLoaded;
             SizeChanged += (s, e) => RepositionOnScreen();
         }
@@ -92,6 +95,50 @@ namespace WinTaskbar.Views
             PopulateCalendar();
             UpdateQuickStats();
             UpdateNotchGeometry(NotchRoot.ActualWidth > 0 ? NotchRoot.ActualWidth : 320, NotchRoot.ActualHeight > 0 ? NotchRoot.ActualHeight : 32);
+
+            // Register Core Audio Volume Notification (for volume sliders, taskbar sliders, and key presses)
+            AudioHelper.RegisterNotification((vol, muted) =>
+            {
+                Dispatcher.BeginInvoke(() => ShowVolumeHud(vol, muted));
+            });
+
+            // Start Global Keyboard Hook (for Caps Lock, Volume keys, Mute)
+            try
+            {
+                GlobalHookHelper.Start();
+                GlobalHookHelper.KeyIntercepted += OnGlobalKeyIntercepted;
+            }
+            catch { }
+        }
+
+        private void OnGlobalKeyIntercepted(int vkCode, bool isDown)
+        {
+            if (!isDown) return;
+
+            if (vkCode == GlobalHookHelper.VK_VOLUME_UP || vkCode == GlobalHookHelper.VK_VOLUME_DOWN || vkCode == GlobalHookHelper.VK_VOLUME_MUTE)
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    float vol = AudioHelper.GetMasterVolume();
+                    bool muted = AudioHelper.IsMuted();
+                    ShowVolumeHud(vol, muted);
+                });
+            }
+            else if (vkCode == GlobalHookHelper.VK_CAPITAL)
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    // Delay 50ms so Windows state has toggled
+                    var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+                    t.Tick += (s, ev) =>
+                    {
+                        t.Stop();
+                        bool caps = (GlobalHookHelper.GetKeyState(GlobalHookHelper.VK_CAPITAL) & 1) != 0;
+                        ShowCapsHud(caps);
+                    };
+                    t.Start();
+                });
+            }
         }
 
         public void RepositionOnScreen()
@@ -192,26 +239,22 @@ namespace WinTaskbar.Views
 
             BorderSpotifyMini.Visibility = track.HasMedia && track.IsPlaying ? Visibility.Visible : Visibility.Collapsed;
 
-            // 2. Expanded Mode Switching
+            // 2. Expanded Header Updates
+            GaugeBatteryExpanded.Value = battery;
+            TxtDateTimeExpanded.Text = DateTime.Now.ToString("ddd d MMM yyyy HH:mm", CultureInfo.InvariantCulture);
+
+            GaugeCpuMedia.Value = cpu;
+            TxtCpuMedia.Text = $"{cpu:F0}%";
+
+            GaugeRamMedia.Value = ram;
+            TxtRamMedia.Text = $"{ram:F0}%";
+
+            TxtDiskMedia.Text = FormatCompactSpeed(maxDiskSpeed);
+            TxtNetMedia.Text = FormatCompactSpeed(maxNetSpeed);
+
+            // 3. Spotify Page Updates (Page 0)
             if (track.HasMedia)
             {
-                // Show Media Card (Image 2 style)
-                GridMediaView.Visibility = Visibility.Visible;
-                GridAgendaTelemetryView.Visibility = Visibility.Collapsed;
-
-                GaugeBatteryExpanded.Value = battery;
-                TxtDateTimeExpanded.Text = DateTime.Now.ToString("ddd d MMM yyyy HH:mm", CultureInfo.InvariantCulture);
-
-                // Telemetry Pills in Media Header (Clickable)
-                GaugeCpuMedia.Value = cpu;
-                TxtCpuMedia.Text = $"{cpu:F0}%";
-
-                GaugeRamMedia.Value = ram;
-                TxtRamMedia.Text = $"{ram:F0}%";
-
-                TxtDiskMedia.Text = FormatCompactSpeed(maxDiskSpeed);
-                TxtNetMedia.Text = FormatCompactSpeed(maxNetSpeed);
-
                 TxtSongTitle.Text = !string.IsNullOrWhiteSpace(track.Title) ? track.Title : "Histórias dos Hinos, Live 1";
                 TxtArtistName.Text = !string.IsNullOrWhiteSpace(track.Artist) ? track.Artist : "Ricardo Martins";
                 TxtPlayPauseIcon.Text = track.IsPlaying ? "⏸" : "▶";
@@ -235,30 +278,36 @@ namespace WinTaskbar.Views
             }
             else
             {
-                // Show Agenda + 4 Large Telemetry Cards
-                GridMediaView.Visibility = Visibility.Collapsed;
-                GridAgendaTelemetryView.Visibility = Visibility.Visible;
-
-                // Telemetry Dashboard
-                GaugeCpuDash.Value = cpu;
-                TxtCpuDash.Text = $"{cpu:F0}%";
-
-                GaugeRamDash.Value = ram;
-                TxtRamDash.Text = $"{ram:F0}%";
-
-                TxtDiskDash.Text = FormatCompactSpeed(maxDiskSpeed);
-                GaugeDiskDash.Value = Math.Clamp((maxDiskSpeed / (1024.0 * 1024.0 * 20.0)) * 100.0, 5, 100);
-
-                TxtNetDash.Text = FormatCompactSpeed(maxNetSpeed);
-                GaugeNetDash.Value = Math.Clamp((maxNetSpeed / (1024.0 * 1024.0 * 10.0)) * 100.0, 5, 100);
-
-                var ptCulture = new CultureInfo("pt-BR");
-                DateTime today = DateTime.Today;
-                string dayOfWeekName = ptCulture.DateTimeFormat.GetDayName(today.DayOfWeek);
-                string monthName = ptCulture.DateTimeFormat.GetMonthName(today.Month);
-                TxtAgendaHeader.Text = $"📅 Hoje, {today.Day} de {char.ToUpper(monthName[0]) + monthName.Substring(1)}";
-                TxtAgendaSub.Text = $"{char.ToUpper(dayOfWeekName[0]) + dayOfWeekName.Substring(1)} • {DateTime.Now:HH:mm}";
+                TxtSongTitle.Text = "Nenhuma música tocando";
+                TxtArtistName.Text = "Spotify pausado ou fechado";
+                TxtPlayPauseIcon.Text = "▶";
+                ImgAlbumArt.Source = null;
+                TxtAlbumPlaceholder.Visibility = Visibility.Visible;
+                TxtTimeElapsed.Text = "00:00";
+                TxtTimeRemaining.Text = "-00:00";
+                BarMediaProgress.Width = 0;
             }
+
+            // 4. Telemetry Dashboard Updates (Page 1)
+            GaugeCpuDash.Value = cpu;
+            TxtCpuDash.Text = $"{cpu:F0}%";
+
+            GaugeRamDash.Value = ram;
+            TxtRamDash.Text = $"{ram:F0}%";
+
+            TxtDiskDash.Text = FormatCompactSpeed(maxDiskSpeed);
+            GaugeDiskDash.Value = Math.Clamp((maxDiskSpeed / (1024.0 * 1024.0 * 20.0)) * 100.0, 5, 100);
+
+            TxtNetDash.Text = FormatCompactSpeed(maxNetSpeed);
+            GaugeNetDash.Value = Math.Clamp((maxNetSpeed / (1024.0 * 1024.0 * 10.0)) * 100.0, 5, 100);
+
+            // 5. Agenda Updates (Page 2)
+            DateTime today = DateTime.Today;
+            var ptCulture = new CultureInfo("pt-BR");
+            string dayOfWeekName = ptCulture.DateTimeFormat.GetDayName(today.DayOfWeek);
+            string monthName = ptCulture.DateTimeFormat.GetMonthName(today.Month);
+            TxtAgendaHeader.Text = $"📅 Hoje, {today.Day} de {char.ToUpper(monthName[0]) + monthName.Substring(1)}";
+            TxtAgendaSub.Text = $"{char.ToUpper(dayOfWeekName[0]) + dayOfWeekName.Substring(1)} • {DateTime.Now:HH:mm}";
         }
 
         private static string FormatCompactSpeed(double bytes)
@@ -268,6 +317,113 @@ namespace WinTaskbar.Views
             if (bytes >= 1024)
                 return $"{bytes / 1024:F0}K/s";
             return $"{bytes:F0}B/s";
+        }
+
+        // ================= DYNAMIC HUD OSD (VOLUME / BRIGHTNESS / CAPS LOCK) =================
+
+        public void ShowVolumeHud(float volScalar, bool isMuted)
+        {
+            double pct = Math.Round(volScalar * 100.0);
+            TxtHudIcon.Text = isMuted ? "🔇" : "🔊";
+            GridHudBarContainer.Visibility = Visibility.Visible;
+            TxtHudText.Visibility = Visibility.Collapsed;
+
+            const double maxBarWidth = 190.0;
+            BarHudProgress.Width = Math.Max(2.0, maxBarWidth * (pct / 100.0));
+
+            TriggerHudDisplay();
+        }
+
+        public void ShowBrightnessHud(int brightnessPercent)
+        {
+            TxtHudIcon.Text = "🔆";
+            GridHudBarContainer.Visibility = Visibility.Visible;
+            TxtHudText.Visibility = Visibility.Collapsed;
+
+            const double maxBarWidth = 190.0;
+            BarHudProgress.Width = Math.Max(2.0, maxBarWidth * (Math.Clamp(brightnessPercent, 0, 100) / 100.0));
+
+            TriggerHudDisplay();
+        }
+
+        public void ShowCapsHud(bool isCapsLockActive)
+        {
+            TxtHudIcon.Text = "⇪";
+            GridHudBarContainer.Visibility = Visibility.Collapsed;
+            TxtHudText.Visibility = Visibility.Visible;
+            TxtHudText.Text = isCapsLockActive ? "CAPS LOCK ATIVADO" : "CAPS LOCK DESATIVADO";
+
+            TriggerHudDisplay();
+        }
+
+        private void TriggerHudDisplay()
+        {
+            if (_isExpanded) return; // Don't interrupt expanded interaction
+
+            _hudTimer.Stop();
+            GridCollapsed.Visibility = Visibility.Collapsed;
+            GridExpanded.Visibility = Visibility.Collapsed;
+            GridHudView.Visibility = Visibility.Visible;
+            GridHudView.Opacity = 1.0;
+
+            NotchRoot.Width = 280;
+            NotchRoot.Height = 32;
+
+            _hudTimer.Start();
+        }
+
+        private void OnHudTimerTick(object? sender, EventArgs e)
+        {
+            _hudTimer.Stop();
+            if (_isExpanded) return;
+
+            var fadeOut = new DoubleAnimation(1.0, 0.0, TimeSpan.FromMilliseconds(160));
+            fadeOut.Completed += (s, ev) =>
+            {
+                GridHudView.Visibility = Visibility.Collapsed;
+                GridCollapsed.Visibility = Visibility.Visible;
+                GridCollapsed.Opacity = 1.0;
+                NotchRoot.Width = 320;
+                NotchRoot.Height = 32;
+            };
+            GridHudView.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        // ================= PAGE SWITCHING (< AND > BUTTONS + DOTS) =================
+
+        private void BtnPagePrev_Click(object sender, RoutedEventArgs e)
+        {
+            SwitchPage((_activePageIndex - 1 + 3) % 3);
+            e.Handled = true;
+        }
+
+        private void BtnPageNext_Click(object sender, RoutedEventArgs e)
+        {
+            SwitchPage((_activePageIndex + 1) % 3);
+            e.Handled = true;
+        }
+
+        private void BtnDot0_Click(object sender, RoutedEventArgs e) => SwitchPage(0);
+        private void BtnDot1_Click(object sender, RoutedEventArgs e) => SwitchPage(1);
+        private void BtnDot2_Click(object sender, RoutedEventArgs e) => SwitchPage(2);
+
+        private void SwitchPage(int index)
+        {
+            _activePageIndex = index;
+
+            PageSpotify.Visibility = (index == 0) ? Visibility.Visible : Visibility.Collapsed;
+            PageTelemetry.Visibility = (index == 1) ? Visibility.Visible : Visibility.Collapsed;
+            PageAgenda.Visibility = (index == 2) ? Visibility.Visible : Visibility.Collapsed;
+
+            // Update Pagination Dots (— • • •)
+            Dot0.Width = (index == 0) ? 12 : 3;
+            Dot0.Background = (index == 0) ? Brushes.White : new SolidColorBrush(Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
+
+            Dot1.Width = (index == 1) ? 12 : 3;
+            Dot1.Background = (index == 1) ? Brushes.White : new SolidColorBrush(Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
+
+            Dot2.Width = (index == 2) ? 12 : 3;
+            Dot2.Background = (index == 2) ? Brushes.White : new SolidColorBrush(Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
         }
 
         // ================= NOTCH GEOMETRY (Concave Ears + Rounded Bottom) =================
@@ -354,15 +510,25 @@ namespace WinTaskbar.Views
             if (_isExpanded) return;
             _isExpanded = true;
 
-            bool hasMedia = _mediaService.CurrentTrack.HasMedia;
-            double targetWidth = hasMedia ? 520 : 550;
-            double targetHeight = hasMedia ? 146 : 148;
+            _hudTimer.Stop();
+            GridHudView.Visibility = Visibility.Collapsed;
 
-            var widthAnim = new DoubleAnimation(targetWidth, TimeSpan.FromMilliseconds(220))
+            // Auto-default to Spotify (0) if music playing, or Telemetry (1) if no music
+            bool hasMedia = _mediaService.CurrentTrack.HasMedia;
+            if (!hasMedia && _activePageIndex == 0)
+            {
+                SwitchPage(1);
+            }
+            else
+            {
+                SwitchPage(_activePageIndex);
+            }
+
+            var widthAnim = new DoubleAnimation(540, TimeSpan.FromMilliseconds(220))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
-            var heightAnim = new DoubleAnimation(targetHeight, TimeSpan.FromMilliseconds(220))
+            var heightAnim = new DoubleAnimation(152, TimeSpan.FromMilliseconds(220))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
@@ -506,6 +672,8 @@ namespace WinTaskbar.Views
         protected override void OnClosed(EventArgs e)
         {
             _timer.Stop();
+            _hudTimer.Stop();
+            GlobalHookHelper.Stop();
             TaskbarHelper.RestoreWorkArea();
             _cpuFlyout.Close();
             _memoryFlyout.Close();
