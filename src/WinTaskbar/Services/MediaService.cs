@@ -75,6 +75,17 @@ namespace WinTaskbar.Services
                             _trackInfo.HasMedia = true;
                             _trackInfo.SourceApp = _currentSession.SourceAppUserModelId ?? "Mídia";
 
+                            try
+                            {
+                                var timeline = _currentSession.GetTimelineProperties();
+                                if (timeline != null)
+                                {
+                                    _trackInfo.Position = timeline.Position;
+                                    _trackInfo.Duration = timeline.EndTime;
+                                }
+                            }
+                            catch { }
+
                             // Load Album Art Thumbnail
                             if (props.Thumbnail != null)
                             {

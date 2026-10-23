@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
@@ -13,6 +14,8 @@ namespace WinTaskbar.Models
         private bool _hasMedia;
         private ImageSource? _thumbnail;
         private string _sourceApp = string.Empty;
+        private TimeSpan _position = TimeSpan.Zero;
+        private TimeSpan _duration = TimeSpan.Zero;
 
         public string Title
         {
@@ -54,6 +57,56 @@ namespace WinTaskbar.Models
         {
             get => _sourceApp;
             set { _sourceApp = value; OnPropertyChanged(); }
+        }
+
+        public TimeSpan Position
+        {
+            get => _position;
+            set
+            {
+                _position = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(PositionFormatted));
+                OnPropertyChanged(nameof(RemainingFormatted));
+                OnPropertyChanged(nameof(ProgressPercentage));
+            }
+        }
+
+        public TimeSpan Duration
+        {
+            get => _duration;
+            set
+            {
+                _duration = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DurationFormatted));
+                OnPropertyChanged(nameof(RemainingFormatted));
+                OnPropertyChanged(nameof(ProgressPercentage));
+            }
+        }
+
+        public string PositionFormatted => Position.ToString(@"mm\:ss");
+
+        public string DurationFormatted => Duration.ToString(@"mm\:ss");
+
+        public string RemainingFormatted
+        {
+            get
+            {
+                if (Duration <= TimeSpan.Zero) return "-00:00";
+                var rem = Duration - Position;
+                if (rem < TimeSpan.Zero) rem = TimeSpan.Zero;
+                return $"-{rem:mm\\:ss}";
+            }
+        }
+
+        public double ProgressPercentage
+        {
+            get
+            {
+                if (Duration.TotalSeconds <= 0) return 0.0;
+                return Math.Clamp((Position.TotalSeconds / Duration.TotalSeconds) * 100.0, 0.0, 100.0);
+            }
         }
 
         public string DisplayTitle
